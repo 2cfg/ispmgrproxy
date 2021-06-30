@@ -2,7 +2,7 @@
 # tasks file for 2cfg.loadbalancer.configure_nginx_host
 - name: Configure nginx web host
   template:
-    src: server_template.conf.j2
+    src: "{{server_template}}"
     dest: /etc/nginx/sites-enabled/{{ web_domain }}.conf
     mode: 0644
 

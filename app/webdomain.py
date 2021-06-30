@@ -12,9 +12,15 @@ class WebDomain(object):
         self.records = []
 
     def get_ansible_extra_vars(self):
+        # TODO: Trigger on table webdomain
+        if self.active:
+            server_template = "server_active_template.conf.j2"
+        else:
+            server_template = "server_suspended_template.conf.j2"
 
         data = {
             "web_domain": self.name_idn,
+            "server_template": server_template,
             "server_names": " ".join(str(r) for r in self.records)
         }
 

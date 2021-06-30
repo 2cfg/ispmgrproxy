@@ -1,0 +1,13 @@
+    server {
+        listen       {{ listen_server }}:80;
+        server_name  {{ server_names }};
+
+        access_log  /var/log/nginx/{{ web_domain }}.access.log;
+	error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
+
+        location /
+        {
+                return 444;
+        }
+
+    }
