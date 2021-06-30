@@ -1,0 +1,22 @@
+- name: Test playbook
+  hosts: nginx-master
+  become: yes # sudo
+
+  vars:
+       master_node: 192.168.47.102
+       ispmanager_node: 192.168.47.105
+       listen_server: 192.168.10.10 # Load balancer IPv4 Address
+
+  tasks:
+
+  - name: Display domain_name variable
+    debug:
+      msg: "Debug variable web_domain: {{ web_domain }}"
+
+  - name: Display server_names variables
+    debug:
+      msg: "Debug variable server_names: {{ server_names }}"
+
+  roles:
+    - { role: 2cfg.loadbalancer.configure_nginx_host }
+    - { role: 2cfg.loadbalancer.configure_ssl_certificate }

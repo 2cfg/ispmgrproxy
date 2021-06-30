@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import json
 
 class WebDomain(object):
 
@@ -12,10 +12,15 @@ class WebDomain(object):
         self.records = []
 
     def get_ansible_extra_vars(self):
-        
-        records = ':'.join(str(r) for r in self.records)
-        
-        extra_vars = '--extra-vars "WEB_DOMAIN={} DOMAIN_RECORDS={}"'.format(self.name_idn, records)
+
+        data = {
+            "web_domain": self.name_idn,
+            "server_names": " ".join(str(r) for r in self.records)
+        }
+
+        json_string = json.dumps(data)   
+        extra_vars = "--extra-vars '{}'".format(json_string)
+        # print(extra_vars)
 
         return extra_vars
 

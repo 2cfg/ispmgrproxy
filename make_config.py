@@ -12,7 +12,7 @@ if __name__ == '__main__':
         # print(webdomain.get_ansible_extra_vars())
         out, err, rc = ansible_runner.run_command(
            executable_cmd='ansible-playbook',
-           cmdline_args=['test.yml', webdomain.get_ansible_extra_vars()],
+           cmdline_args=['configure_webdomain.yml', webdomain.get_ansible_extra_vars()], # for example, see playbook.yml
            host_cwd='/root/ansible-control',
            input_fd=sys.stdin,
            output_fd=sys.stdout,

@@ -1,2 +1,26 @@
 ---
 # tasks file for 2cfg.loadbalancer.configure_nginx_host
+- name: Configure nginx web host
+  template:
+    src: server_template.conf.j2
+    dest: /etc/nginx/sites-enabled/{{ web_domain }}.conf
+    mode: 0644
+
+- name: Check nginx config
+  shell: "/usr/sbin/nginx -t"
+  register: nginx_config_status
+
+- name: NGINX test status
+  debug:
+    msg: "Nginx config test : {{ nginx_config_status }}"
+
+- name: NGINX reload
+  service:
+    name=nginx
+    state=reloaded
+  delegate_to: "{{item}}"
+  with_items:
+    - nginx-master
+    - ngx1
+    - ngx2
+  when: nginx_config_status.rc == 0

@@ -1,3 +1,4 @@
 app/config.py
+configure_webdomain.yml
 artifacts/
 __pycache__/
