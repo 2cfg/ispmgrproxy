@@ -13,7 +13,7 @@ class WebDomain(object):
 
     def get_ansible_extra_vars(self):
         # TODO: Trigger on table webdomain
-        if self.active:
+        if self.active == 'on':
             server_template = "server_active_template.conf.j2"
         else:
             server_template = "server_suspended_template.conf.j2"
