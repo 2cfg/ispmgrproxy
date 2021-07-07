@@ -1,2 +1,50 @@
 ---
 # tasks file for 2cfg.loadbalancer.configure_ssl_certificate
+
+- name: Generate an OpenSSL private key with the default values (4096 bits, RSA)
+  community.crypto.openssl_privatekey:
+    path: /etc/nginx/sslcert/{{ web_domain }}.private.key
+
+
+- name: Generate an OpenSSL Certificate Signing Request with subjectAltName extension
+  community.crypto.openssl_csr:
+    path: /etc/ssl/csr/{{ web_domain }}.csr
+    privatekey_path: /etc/nginx/sslcert/{{ web_domain }}.private.key
+    common_name: '{{ web_domain }}'
+    subject_alt_name: '{{ subject_alt_name }}'
+
+
+- name: Create a challenge for {{ web_domain }} using a account key file.
+  community.crypto.acme_certificate:
+    account_key_src: /etc/ssl/private/ansible.com.pem 
+    acme_version: 2
+    acme_directory: https://acme-staging-v02.api.letsencrypt.org/directory
+    csr: /etc/ssl/csr/{{ web_domain }}.csr
+    dest: /etc/nginx/sslcert/{{ web_domain }}.crt
+    fullchain_dest: /etc/nginx/sslcert/{{ web_domain }}-fullchain.crt
+  register: domain_challenge
+
+- name: Create validation token for {{ web_domain }}
+  copy:
+    dest: /etc/nginx/www/{{ item.value['http-01']['resource'] }}
+    content: "{{ item.value['http-01']['resource_value'] }}"
+  loop: "{{ domain_challenge.challenge_data | dict2items }}"
+  when: domain_challenge is changed
+
+- name: Let the challenge be validated and retrieve the cert and intermediate certificate
+  community.crypto.acme_certificate:
+    account_key_src: /etc/ssl/private/ansible.com.pem
+    acme_version: 2
+    acme_directory: https://acme-staging-v02.api.letsencrypt.org/directory
+    csr: /etc/ssl/csr/{{ web_domain }}.csr
+    dest: /etc/nginx/sslcert/{{ web_domain }}.crt
+    fullchain_dest: /etc/nginx/sslcert/{{ web_domain }}-fullchain.crt
+    chain_dest: /etc/nginx/sslcert/{{ web_domain }}-chain.crt
+    data: "{{ domain_challenge }}"
+
+- name: Remove tokens for {{ web_domain }}
+  ansible.builtin.file:
+    path: /etc/nginx/www/{{ item.value['http-01']['resource'] }}
+    state: absent
+  loop: "{{ domain_challenge.challenge_data | dict2items }}"
+  when: domain_challenge is changed

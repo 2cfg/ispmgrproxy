@@ -14,6 +14,10 @@
   debug:
     msg: "Nginx config test : {{ nginx_config_status }}"
 
+- name: Pause for 5 seconds
+  pause:
+    seconds: 5
+
 - name: NGINX reload
   service:
     name=nginx

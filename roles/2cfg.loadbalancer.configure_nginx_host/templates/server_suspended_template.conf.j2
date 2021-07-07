@@ -1,6 +1,11 @@
+# $ssl:off$active:off$server_names:{{ server_names }}
     server {
         listen       {{ listen_server }}:80;
         server_name  {{ server_names }};
+
+        location ^~ /.well-known/acme-challenge/ {
+                root /etc/nginx/www;
+        }
 
 	access_log  /var/log/nginx/{{ web_domain }}.access.log;
         error_log   /var/log/nginx/{{ web_domain }}.error.log warn;

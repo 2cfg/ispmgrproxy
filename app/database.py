@@ -9,17 +9,21 @@ def get_webdomains_to_update():
 
     try:
         cnx = connection.MySQLConnection(**config.database)
-        cursor = cnx.cursor()
+        cursor = cnx.cursor(buffered=True)
+#        cursor.reset()
 
         query = ("SELECT DISTINCT domain FROM dnsmon.updates")
         cursor.execute(query)
 
-        for (domain,) in cursor:
-            query = ("SELECT id, active, int_suspend from ispmgr.webdomain WHERE name_idn = '{}'".format(domain))
-            cursor.execute(query)
+        for (domain,) in cursor.fetchall():
+            query = ("SELECT id, active, int_suspend, email from ispmgr.webdomain WHERE name_idn = '{}'".format(domain))
 
-            (id, active, int_suspend) = cursor.fetchone()
-            webdomain = WebDomain(id=id, name_idn=domain, active=active, suspended=int_suspend)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            if not result:
+                continue
+            (id, active, int_suspend, email) = result
+            webdomain = WebDomain(id=id, name_idn=domain, active=active, suspended=int_suspend, email=email)
             domains.append(webdomain)
 
         cursor.close()

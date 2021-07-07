@@ -1,0 +1,16 @@
+- name: Test playbook
+  hosts: nginx-master
+  become: yes # sudo
+
+  tasks:
+
+  - name: Display domain_name variable
+    debug:
+      msg: "Debug variable web_domain: {{ web_domain }}"
+
+  - name: Display server_names variables
+    debug:
+      msg: "Debug variable server_names: {{ server_names }}"
+
+  roles:
+    - role: 2cfg.loadbalancer.configure_ssl_certificate
