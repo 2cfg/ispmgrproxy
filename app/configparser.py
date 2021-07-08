@@ -59,10 +59,12 @@ class ConfigParser(object):
 
     def check_required_new_ssl_cert(self):
         if self.ssl_enabled == False:
+
+            print("ssl_enabled = False")
             self.required_new_ssl_cert = True
             return
 
         for record in self.new_records:
-            if record not in self.records:
+            if str(record) not in self.records:
                 self.required_new_ssl_cert = True
                 break

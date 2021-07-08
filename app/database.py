@@ -10,12 +10,19 @@ def get_webdomains_to_update():
     try:
         cnx = connection.MySQLConnection(**config.database)
         cursor = cnx.cursor(buffered=True)
-#        cursor.reset()
 
         query = ("SELECT DISTINCT domain FROM dnsmon.updates")
         cursor.execute(query)
 
         for (domain,) in cursor.fetchall():
+
+            if '*' in str(domain):
+                continue
+            
+            query = ("SELECT updated_at FROM dnsmon.updates WHERE domain = '{}' ORDER BY updated_at DESC LIMIT 1;".format(domain))
+            cursor.execute(query)
+            (updated_at, ) = cursor.fetchone()
+
             query = ("SELECT id, active, int_suspend, email from ispmgr.webdomain WHERE name_idn = '{}'".format(domain))
 
             cursor.execute(query)
@@ -23,7 +30,7 @@ def get_webdomains_to_update():
             if not result:
                 continue
             (id, active, int_suspend, email) = result
-            webdomain = WebDomain(id=id, name_idn=domain, active=active, suspended=int_suspend, email=email)
+            webdomain = WebDomain(id=id, name_idn=domain, active=active, updated_at=updated_at, suspended=int_suspend, email=email)
             domains.append(webdomain)
 
         cursor.close()
@@ -45,12 +52,16 @@ def fill_webdomain_records(webdomain):
 
     try:
         cnx = connection.MySQLConnection(**config.database)
-        cursor = cnx.cursor()
+        cursor = cnx.cursor(buffered=True)
 
         query = ("SELECT name_idn from ispmgr.webdomain_alias WHERE webdomain = '{}'".format(webdomain.id))
         cursor.execute(query)
 
         for (record,) in cursor.fetchall():
+
+            if '*' in str(record):
+                continue
+            
             webdomain_record = WebDomainRecord(name_idn=record)
             webdomain.records.append(webdomain_record)
             # print("Process web domain record: {}".format(webdomain_record.name_idn))
@@ -66,3 +77,32 @@ def fill_webdomain_records(webdomain):
             print(err)
     else:
         cnx.close()
+
+def remove_from_queue(webdomain):
+
+    result = False
+
+    try:
+        cnx = connection.MySQLConnection(**config.database)
+        cursor = cnx.cursor(buffered=True)
+
+        query = ("DELETE FROM dnsmon.updates WHERE domain = '{}' and updated_at <= {}".
+          format(webdomain.name_idn, webdomain.updated_at))
+        cursor.execute(query)
+
+        cnx.commit()
+        cursor.close()
+
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Database does not exist")
+        else:
+            print(err)
+    else:
+
+        cnx.close()
+        result = True
+
+    return result

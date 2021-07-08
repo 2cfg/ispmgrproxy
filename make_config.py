@@ -37,15 +37,34 @@ if __name__ == '__main__':
         # проверить разрешение имён
         resolver = DomainResolver(webdomain.records)
         if not resolver.resolve_all():
+            print("Resolver")
             continue
 
-        if _config.required_new_ssl_cert:
+        if _config.required_new_ssl_cert: # почему вызывается?
+            print("Required SSL")
             # выпустить сертификат  
             run_playbook('configure_ssl_cert.yml', webdomain.get_ansible_extra_vars(_config))
             
-
         if _config.ssl_vhost_fullchain_exist and _config.ssl_vhost_privkey_exist:
             _config.ssl_enabled = True
+            print("Nginx-SSL")
             run_playbook('configure_webdomain.yml', webdomain.get_ansible_extra_vars(_config))
 
-            # обновить в БД инфомрацию о том, что операция выполнена
+        # обновить в БД инфомрацию о том, что операция выполнена
+        _config = ConfigParser(webdomain)
+
+        if not _config.ngx_vhost_config_exist:
+            print("ngx_vhost_config_exist")
+            continue
+        if not _config.ssl_vhost_fullchain_exist:
+            print("ssl_vhost_fullchain_exist")
+            continue
+        if not _config.ssl_vhost_privkey_exist:
+            print("ssl_vhost_privkey_exist")
+            continue
+        if not _config.ssl_enabled:
+            print("ssl_enabled")
+            continue
+
+        db.remove_from_queue(webdomain)
+        print("remove_from_queue")
