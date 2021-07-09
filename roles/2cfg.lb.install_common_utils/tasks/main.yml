@@ -1,0 +1,17 @@
+---
+# tasks file for 2cfg.lb.install_common_utils
+- name: Install common utilites
+  apt: name={{ item }} state=present
+  loop: 
+    - netsniff-ng
+    - ipset
+    - ipset-persistent
+    - iptables-persistent
+    - netfilter-persistent
+    - cpufrequtils
+    - quagga-bgpd
+    - zabbix-agent
+    - sshfs
+    - whois
+    - python3-psycopg2
+    - python3-pip

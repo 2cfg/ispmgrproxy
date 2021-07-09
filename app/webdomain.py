@@ -3,9 +3,10 @@ import json
 
 class WebDomain(object):
 
-    def __init__(self, id, name_idn, email, updated_at, active=True, suspended=False):
+    def __init__(self, id, ip_addr, name_idn, email, updated_at, active=True, suspended=False):
 
         self.id = id
+        self.ip_addr = ip_addr
         self.name_idn = name_idn
         self.active = active
         self.suspended = suspended
@@ -14,9 +15,6 @@ class WebDomain(object):
         self.updated_at = updated_at
 
     def get_ansible_extra_vars(self, _config):
-        # check nginx conf exist
-        # check ssl state
-        # check cert files exist
 
         # TODO: Config for wildcard domains
         # TODO: Mysql Trigger on table webdomain active / suspended
@@ -34,6 +32,7 @@ class WebDomain(object):
 
         data = {
             "web_domain": self.name_idn,
+            "listen_server": self.ip_addr,
             "server_template": server_template,
             "server_names": " ".join(str(r) for r in self.records),
             "owner_email": self.email,

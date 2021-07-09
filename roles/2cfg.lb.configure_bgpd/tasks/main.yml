@@ -1,0 +1,25 @@
+---
+# tasks file for 2cfg.loadbalancer.configure_bgpd
+- name: Create bgpd.conf
+  template:
+    src: bgpd.conf.j2
+    dest: /etc/quagga/bgpd.conf
+    mode: 0644
+
+- name: Create bgpd.conf
+  template:
+    src: zebra.conf.j2
+    dest: /etc/quagga/zebra.conf
+    mode: 0644
+
+- name: systemctl daemon-reload
+  ansible.builtin.systemd:
+    enabled: yes
+    daemon_reload: yes
+    name: zebra.service
+
+- name: systemctl daemon-reload
+  ansible.builtin.systemd:
+    enabled: yes
+    daemon_reload: yes
+    name: bgpd.service

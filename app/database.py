@@ -30,7 +30,12 @@ def get_webdomains_to_update():
             if not result:
                 continue
             (id, active, int_suspend, email) = result
-            webdomain = WebDomain(id=id, name_idn=domain, active=active, updated_at=updated_at, suspended=int_suspend, email=email)
+
+            query = ("select ip.name as ip_addr from ipaddr as ip join ipaddr_webdomain as ipw on ip.id = ipw.ipaddr where ipw.webdomain = {}").format(id)
+            cursor.execute(query)
+            (ip_addr, ) = cursor.fetchone()
+
+            webdomain = WebDomain(id=id, ip_addr=ip_addr, name_idn=domain, active=active, updated_at=updated_at, suspended=int_suspend, email=email)
             domains.append(webdomain)
 
         cursor.close()

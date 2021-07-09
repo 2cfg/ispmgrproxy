@@ -1,4 +1,4 @@
-- name: Test playbook
+- name: Configure ssl certificate
   hosts: nginx-master
   become: yes # sudo
 
@@ -13,4 +13,4 @@
       msg: "Debug variable server_names: {{ server_names }}"
 
   roles:
-    - role: 2cfg.loadbalancer.configure_ssl_certificate
+    - role: 2cfg.lb.configure_ssl_certificate

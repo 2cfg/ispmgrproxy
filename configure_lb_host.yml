@@ -1,0 +1,10 @@
+- name: Setting up loadbalancer host
+  hosts: ngx-lb-1
+  become: yes # sudo
+
+  vars:
+       master_node: 192.168.47.102
+   
+  roles:
+#   - { role: 2cfg.lb.install_common_utils }
+    - { role: 2cfg.lb.configure_bgpd }      
