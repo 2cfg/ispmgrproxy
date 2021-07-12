@@ -1,14 +1,17 @@
 ---
 # tasks file for 2cfg.lb.configure_nginx_vhost
+
 - name: Configure nginx web host
   template:
     src: "{{server_template}}"
     dest: /etc/nginx/sites-enabled/{{ web_domain }}.conf
     mode: 0644
 
+
 - name: Check nginx config
   shell: "/usr/sbin/nginx -t"
   register: nginx_config_status
+
 
 - name: NGINX test status
   debug:
@@ -18,7 +21,7 @@
 - name: Copying nginx vhost configuration
   copy:
     src: /etc/nginx/sites-enabled/{{ web_domain }}.conf
-    dest: /etc/nginx/sites-enabled
+    dest: /etc/nginx/sites-enabled/
     mode: 0644
   delegate_to: "{{ item }}"
   delegate_facts: true

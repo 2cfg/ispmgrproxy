@@ -6,6 +6,14 @@
     path: /etc/nginx/sslcert/{{ web_domain }}.private.key
 
 
+- name: Copying private key
+  synchronize:
+    src: /etc/nginx/sslcert/{{ web_domain }}.private.key
+    dest: /etc/nginx/sslcert/{{ web_domain }}.private.key
+    mode: pull
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['ngx_lb'] }}"
+
 - name: Generate an OpenSSL Certificate Signing Request with subjectAltName extension
   community.crypto.openssl_csr:
     path: /etc/ssl/csr/{{ web_domain }}.csr
@@ -31,6 +39,16 @@
   loop: "{{ domain_challenge.challenge_data | dict2items }}"
   when: domain_challenge is changed
 
+- name: Copying validation tokens
+  synchronize:
+    src: "/etc/nginx/www/.well-known/acme-challenge"
+    dest: "/etc/nginx/www/.well-known"
+    mode: pull
+    dirs: yes
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['ngx_lb'] }}"
+  when: domain_challenge is changed
+
 - name: Let the challenge be validated and retrieve the cert and intermediate certificate
   community.crypto.acme_certificate:
     account_key_src: /etc/ssl/private/ansible.com.pem
@@ -42,9 +60,18 @@
     chain_dest: /etc/nginx/sslcert/{{ web_domain }}-chain.crt
     data: "{{ domain_challenge }}"
 
-- name: Remove tokens for {{ web_domain }}
-  ansible.builtin.file:
-    path: /etc/nginx/www/{{ item.value['http-01']['resource'] }}
-    state: absent
-  loop: "{{ domain_challenge.challenge_data | dict2items }}"
-  when: domain_challenge is changed
+- name: Copying certificate and chain
+  synchronize:
+    src: /etc/nginx/sslcert/{{ web_domain }}-fullchain.crt
+    dest: /etc/nginx/sslcert/
+    mode: pull
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['ngx_lb'] }}"
+  when: domain_challenge is changed    
+
+# - name: Remove tokens for {{ web_domain }}
+#   ansible.builtin.file:
+#     path: /etc/nginx/www/{{ item.value['http-01']['resource'] }}
+#     state: absent
+#   loop: "{{ domain_challenge.challenge_data | dict2items }}"
+#   when: domain_challenge is changed

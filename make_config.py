@@ -40,7 +40,6 @@ if __name__ == '__main__':
         # проверить разрешение имён
         resolver = DomainResolver(webdomain.records)
         if not resolver.resolve_all():
-            print("Resolver")
             continue
 
         if _config.required_new_ssl_cert:
@@ -49,6 +48,8 @@ if __name__ == '__main__':
 
             if rc != 0:
                 continue
+
+        _config = ConfigParser(webdomain)
             
         if _config.ssl_vhost_fullchain_exist and _config.ssl_vhost_privkey_exist:
             _config.ssl_enabled = True

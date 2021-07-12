@@ -58,6 +58,14 @@ class ConfigParser(object):
 
 
     def check_required_new_ssl_cert(self):
+        if not self.ssl_vhost_fullchain_exist:
+            self.required_new_ssl_cert = True
+            return
+
+        if not self.ssl_vhost_privkey_exist:
+            self.required_new_ssl_cert = True
+            return
+        
         if self.ssl_enabled == False:
 
             print("ssl_enabled = False")

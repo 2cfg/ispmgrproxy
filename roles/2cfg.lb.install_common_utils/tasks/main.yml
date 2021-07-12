@@ -3,6 +3,7 @@
 - name: Install common utilites
   apt: name={{ item }} state=present
   loop: 
+    - rsync
     - netsniff-ng
     - ipset
     - ipset-persistent
