@@ -1,5 +1,6 @@
 app/config.py
 configure_webdomain.yml
+configure_lb_host.yml
 artifacts/
 hosts.yml
 __pycache__/

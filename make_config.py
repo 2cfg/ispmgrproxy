@@ -15,9 +15,9 @@ def run_playbook(playbook, extra_vars):
         output_fd=sys.stdout,
         error_fd=sys.stderr,
     )
-    print("out: {}".format(out))
-    print("err: {}".format(err))
-    print("rc: {}".format(rc))
+    
+    return rc
+
 
 if __name__ == '__main__':
 
@@ -30,7 +30,10 @@ if __name__ == '__main__':
         # новый домен
         if not _config.ngx_vhost_config_exist: 
             # создать конфиг
-            run_playbook('configure_webdomain.yml', webdomain.get_ansible_extra_vars(_config))
+            rc = run_playbook('configure_webdomain.yml', webdomain.get_ansible_extra_vars(_config))
+
+            if rc != 0:
+                continue
 
             _config = ConfigParser(webdomain)
 
@@ -40,15 +43,19 @@ if __name__ == '__main__':
             print("Resolver")
             continue
 
-        if _config.required_new_ssl_cert: # почему вызывается?
-            print("Required SSL")
+        if _config.required_new_ssl_cert:
             # выпустить сертификат  
-            run_playbook('configure_ssl_cert.yml', webdomain.get_ansible_extra_vars(_config))
+            rc = run_playbook('configure_ssl_cert.yml', webdomain.get_ansible_extra_vars(_config))
+
+            if rc != 0:
+                continue
             
         if _config.ssl_vhost_fullchain_exist and _config.ssl_vhost_privkey_exist:
             _config.ssl_enabled = True
-            print("Nginx-SSL")
-            run_playbook('configure_webdomain.yml', webdomain.get_ansible_extra_vars(_config))
+            rc = run_playbook('configure_webdomain.yml', webdomain.get_ansible_extra_vars(_config))
+
+            if rc != 0:
+                continue
 
         # обновить в БД инфомрацию о том, что операция выполнена
         _config = ConfigParser(webdomain)

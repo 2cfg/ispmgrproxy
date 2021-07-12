@@ -1,0 +1,8 @@
+---
+# tasks file for 2cfg.lb.configure_netplan
+
+- name: Configure netplan
+  template:
+    src: 01-netcfg.yaml.j2
+    dest: /etc/netplan/01-netcfg.yaml
+    mode: 0644

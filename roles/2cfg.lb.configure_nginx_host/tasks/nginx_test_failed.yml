@@ -1,0 +1,11 @@
+---
+
+- name: Remove file (delete file)
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/{{ web_domain }}.conf
+    state: absent
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['ngx_all'] }}"
+  when: nginx_config_error == 1
+
+- assert: { that: "nginx_config_error == 0" }

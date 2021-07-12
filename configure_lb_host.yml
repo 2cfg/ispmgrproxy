@@ -4,6 +4,7 @@
 
   vars:
        master_node: 192.168.47.102
+       vip_address: 185.135.83.132/32
    
   roles:
 #   - { role: 2cfg.lb.install_common_utils }

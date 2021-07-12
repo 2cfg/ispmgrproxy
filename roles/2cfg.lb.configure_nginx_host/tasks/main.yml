@@ -1,5 +1,5 @@
 ---
-# tasks file for 2cfg.loadbalancer.configure_nginx_host
+# tasks file for 2cfg.lb.configure_nginx_vhost
 - name: Configure nginx web host
   template:
     src: "{{server_template}}"
@@ -14,17 +14,49 @@
   debug:
     msg: "Nginx config test : {{ nginx_config_status }}"
 
-- name: Pause for 5 seconds
-  pause:
-    seconds: 5
 
-- name: NGINX reload
+- name: Copying nginx vhost configuration
+  copy:
+    src: /etc/nginx/sites-enabled/{{ web_domain }}.conf
+    dest: /etc/nginx/sites-enabled
+    mode: 0644
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups['ngx_lb'] }}"
+
+
+- name: Pause for 2 seconds
+  pause:
+    seconds: 2
+
+
+- name: Check nginx config
+  shell: "/usr/sbin/nginx -t"
+  register: nginx_config_status
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['ngx_lb'] }}"
+  ignore_errors: yes
+
+
+- name: Check nginx test status results for errors
+  set_fact:
+    nginx_config_error: 1
+    cacheable: yes
+  when: item.rc != 0
+  loop: "{{ nginx_config_status.results }}"
+
+
+- block:
+    - include_tasks: nginx_test_failed.yml
+  any_errors_fatal: true
+  when: nginx_config_error == 1
+
+
+- name: nginx reload
   service:
     name=nginx
     state=reloaded
-  delegate_to: "{{item}}"
-  with_items:
-    - nginx-master
-    - ngx1
-    - ngx2
-  when: nginx_config_status.rc == 0
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['ngx_all'] }}"
+  when: nginx_config_error == 0
+

@@ -31,7 +31,7 @@ def get_webdomains_to_update():
                 continue
             (id, active, int_suspend, email) = result
 
-            query = ("select ip.name as ip_addr from ipaddr as ip join ipaddr_webdomain as ipw on ip.id = ipw.ipaddr where ipw.webdomain = {}").format(id)
+            query = ("select ip.name as ip_addr from ispmgr.ipaddr as ip join ispmgr.ipaddr_webdomain as ipw on ip.id = ipw.ipaddr where ipw.webdomain = {}").format(id)
             cursor.execute(query)
             (ip_addr, ) = cursor.fetchone()
 

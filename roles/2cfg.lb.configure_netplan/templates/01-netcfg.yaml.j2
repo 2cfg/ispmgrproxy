@@ -1,0 +1,35 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+
+    lo:
+      dhcp4: no
+      addresses: [127.0.0.1/8, {{ vip_address }}]
+
+    enp6s0:
+      dhcp4: no
+    enp7s0:
+      dhcp4: no
+
+  bonds:
+    bond0:
+      interfaces:
+        - enp6s0
+        - enp7s0
+      
+      parameters:
+        mode: 802.3ad
+        lacp-rate: fast
+        mii-monitor-interval: 100
+      
+      addresses: [ {{ iface.external.ipaddr }}/{{ iface.external.netmask }}, {{ iface.bgpd.ipaddr }}/{{ iface.bgpd.netmask }} ]
+      gateway4: {{ iface.external.gateway }}
+      nameservers:
+          addresses: [8.8.8.8, 8.8.4.4]
+              
+  vlans:
+    vlan30:
+      id: 30
+      link: bond0
+      addresses: [ "192.168.47.201/22" ]
