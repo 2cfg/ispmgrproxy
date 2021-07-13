@@ -7,5 +7,8 @@
        vip_address: 185.135.83.132/32
    
   roles:
-#   - { role: 2cfg.lb.install_common_utils }
-    - { role: 2cfg.lb.configure_bgpd }      
+    - { role: 2cfg.lb.install_common_utils }
+    - { role: 2cfg.lb.configure_netplan }
+    - { role: 2cfg.lb.configure_bgpd }
+    - { role: geerlingguy.node_exporter }
+    

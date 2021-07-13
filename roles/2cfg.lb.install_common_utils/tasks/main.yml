@@ -4,6 +4,9 @@
   apt: name={{ item }} state=present
   loop: 
     - rsync
+    - nginx
+    - git
+    - libnginx-mod-http-lua
     - netsniff-ng
     - ipset
     - ipset-persistent

@@ -1,0 +1,71 @@
+---
+# tasks file for 2cfg.lb.configure_nginx_server
+
+- name: Configure sysctl.conf
+  template:
+    src: sysctl.conf.j2
+    dest: /etc/sysctl.conf
+    mode: 0644
+
+
+- name: Configure limits.conf
+  template:
+    src: limits.conf.j2
+    dest: /etc/security/limits.conf
+    mode: 0644
+
+
+- name: Create /etc/nginx/nginx.conf
+  template:
+    src: nginx-override.conf.j2
+    dest: /etc/systemd/system/nginx.service.d/override.conf
+    mode: 0644
+
+
+- name: Copying dhparams
+  copy:
+    src: /etc/nginx/sslcert/ssl-dhparams.pem
+    dest: /etc/nginx/sslcert/ssl-dhparams.pem
+    mode: 0644
+
+
+- name: Copying index.html
+  copy:
+    src: /etc/nginx/www/index.html
+    dest: /etc/nginx/www/index.html
+    mode: 0644
+
+
+- name: Clone nginx-lua-prometheus
+  ansible.builtin.git:
+    repo: 'https://github.com/knyar/nginx-lua-prometheus.git'
+    dest: /opt/prometheus-lua
+
+
+- name: Create /etc/nginx/nginx.conf
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    mode: 0644
+
+
+- name: systemctl daemon-reload
+  ansible.builtin.systemd:
+    enabled: no
+    daemon_reload: yes
+    name: nginx.service
+
+
+- name: Enable zabbix-agent
+  service:
+    name: zabbix-agent
+    state: started
+    enabled: yes
+
+
+- name: Create zabbix-agent template
+  template:
+    src: zabbix_agentd.conf.j2
+    dest: /etc/zabbix/zabbix_agentd.conf
+    mode: 0644
+  notify: Restart zabbix-agent

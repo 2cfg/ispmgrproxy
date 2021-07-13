@@ -1,0 +1,6 @@
+---
+# handlers file for 2cfg.lb.configure_nginx_server
+- name: Restart zabbix-agent
+  service:
+    name: zabbix-agent
+    state: restarted

@@ -14,6 +14,7 @@
   delegate_to: "{{ item }}"
   loop: "{{ groups['ngx_lb'] }}"
 
+
 - name: Generate an OpenSSL Certificate Signing Request with subjectAltName extension
   community.crypto.openssl_csr:
     path: /etc/ssl/csr/{{ web_domain }}.csr
@@ -32,12 +33,14 @@
     fullchain_dest: /etc/nginx/sslcert/{{ web_domain }}-fullchain.crt
   register: domain_challenge
 
+
 - name: Create validation token for {{ web_domain }}
   copy:
     dest: /etc/nginx/www/{{ item.value['http-01']['resource'] }}
     content: "{{ item.value['http-01']['resource_value'] }}"
   loop: "{{ domain_challenge.challenge_data | dict2items }}"
   when: domain_challenge is changed
+
 
 - name: Copying validation tokens
   synchronize:
@@ -48,6 +51,7 @@
   delegate_to: "{{ item }}"
   loop: "{{ groups['ngx_lb'] }}"
   when: domain_challenge is changed
+
 
 - name: Let the challenge be validated and retrieve the cert and intermediate certificate
   community.crypto.acme_certificate:
@@ -60,6 +64,7 @@
     chain_dest: /etc/nginx/sslcert/{{ web_domain }}-chain.crt
     data: "{{ domain_challenge }}"
 
+    
 - name: Copying certificate and chain
   synchronize:
     src: /etc/nginx/sslcert/{{ web_domain }}-fullchain.crt
