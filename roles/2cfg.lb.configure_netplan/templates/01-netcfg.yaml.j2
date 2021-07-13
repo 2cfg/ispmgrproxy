@@ -32,4 +32,4 @@ network:
     vlan30:
       id: 30
       link: bond0
-      addresses: [ "{ iface.vlan30.ipaddr }}/{{ iface.vlan30.netmask }}" ]
+      addresses: [ {{ iface.vlan30.ipaddr }}/{{ iface.vlan30.netmask }} ]

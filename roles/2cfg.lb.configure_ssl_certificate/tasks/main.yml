@@ -5,16 +5,6 @@
   community.crypto.openssl_privatekey:
     path: /etc/nginx/sslcert/{{ web_domain }}.private.key
 
-
-- name: Copying private key
-  synchronize:
-    src: /etc/nginx/sslcert/{{ web_domain }}.private.key
-    dest: /etc/nginx/sslcert/{{ web_domain }}.private.key
-    mode: pull
-  delegate_to: "{{ item }}"
-  loop: "{{ groups['ngx_lb'] }}"
-
-
 - name: Generate an OpenSSL Certificate Signing Request with subjectAltName extension
   community.crypto.openssl_csr:
     path: /etc/ssl/csr/{{ web_domain }}.csr
@@ -64,15 +54,6 @@
     chain_dest: /etc/nginx/sslcert/{{ web_domain }}-chain.crt
     data: "{{ domain_challenge }}"
 
-    
-- name: Copying certificate and chain
-  synchronize:
-    src: /etc/nginx/sslcert/{{ web_domain }}-fullchain.crt
-    dest: /etc/nginx/sslcert/
-    mode: pull
-  delegate_to: "{{ item }}"
-  loop: "{{ groups['ngx_lb'] }}"
-  when: domain_challenge is changed    
 
 # - name: Remove tokens for {{ web_domain }}
 #   ansible.builtin.file:

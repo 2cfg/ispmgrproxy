@@ -1,5 +1,5 @@
 - name: Setting up loadbalancer host
-  hosts: ngx-lb-1
+  hosts: ngx-lb-2
   become: yes # sudo
 
   vars:
@@ -11,4 +11,4 @@
     - { role: 2cfg.lb.configure_netplan }
     - { role: 2cfg.lb.configure_bgpd }
     - { role: geerlingguy.node_exporter }
-    
+    - { role: 2cfg.lb.configure_nginx_server }

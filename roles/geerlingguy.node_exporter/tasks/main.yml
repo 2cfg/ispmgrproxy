@@ -48,7 +48,7 @@
 
 - name: Verify node_exporter is responding to requests.
   uri:
-    url: http://localhost:9100/
+    url: http://{{ iface.vlan30.ipaddr }}:9100/
     return_content: true
   register: metrics_output
   failed_when: "'Metrics' not in metrics_output.content"

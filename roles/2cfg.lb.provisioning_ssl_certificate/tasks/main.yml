@@ -1,0 +1,19 @@
+---
+# tasks file for 2cfg.loadbalancer.configure_ssl_certificate
+
+- name: Copying SSL private key
+  synchronize:
+    src: /etc/nginx/sslcert/{{ web_domain }}.private.key
+    dest: /etc/nginx/sslcert/{{ web_domain }}.private.key
+    mode: pull
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['ngx_lb'] }}"
+
+    
+- name: Copying certificate and chain
+  synchronize:
+    src: /etc/nginx/sslcert/{{ web_domain }}-fullchain.crt
+    dest: /etc/nginx/sslcert/
+    mode: pull
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['ngx_lb'] }}"

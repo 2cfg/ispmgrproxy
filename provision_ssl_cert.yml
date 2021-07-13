@@ -14,4 +14,4 @@
       msg: "Debug variable server_names: {{ server_names }}"
 
   roles:
-    - role: 2cfg.lb.configure_ssl_certificate
+    - role: 2cfg.lb.provisioning_ssl_certificate

@@ -20,6 +20,7 @@ http {
         tcp_nopush on;
         tcp_nodelay on;
         keepalive_timeout 65;
+        keepalive_requests 1000;
         types_hash_max_size 2048;
         # server_tokens off;
 
@@ -37,10 +38,6 @@ http {
         client_header_timeout 10s;
 
         reset_timedout_connection on;
-
-        keepalive_timeout 30;
-        keepalive_requests 100;
-
         send_timeout 2;
 
         open_file_cache max=10000 inactive=20s;
@@ -82,7 +79,7 @@ http {
     #-- prometheus
 
         lua_shared_dict prometheus_metrics 256M;
-        lua_package_path "/opt/prometheus-lua/?.lua;;";
+        lua_package_path "/etc/nginx/node_exporter/?.lua;;";
 
         init_worker_by_lua_block {
         prometheus = require("prometheus").init("prometheus_metrics")

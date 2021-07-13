@@ -1,6 +1,31 @@
 ---
 # tasks file for 2cfg.lb.configure_nginx_server
 
+- name: Creates directory
+  file:
+    path: /etc/systemd/system/nginx.service.d
+    state: directory
+
+- name: Creates directory
+  file:
+    path: /etc/nginx/www
+    state: directory
+
+- name: Creates directory
+  file:
+    path: /etc/nginx/sslcert
+    state: directory
+
+
+- name: Remove default vhost configuration file
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Set a hostname
+  ansible.builtin.hostname:
+    name: "{{ hostname }}"
+
 - name: Configure sysctl.conf
   template:
     src: sysctl.conf.j2
@@ -15,7 +40,7 @@
     mode: 0644
 
 
-- name: Create /etc/nginx/nginx.conf
+- name: Create /etc/systemd/system/nginx.service.d/override.conf
   template:
     src: nginx-override.conf.j2
     dest: /etc/systemd/system/nginx.service.d/override.conf
@@ -39,7 +64,7 @@
 - name: Clone nginx-lua-prometheus
   ansible.builtin.git:
     repo: 'https://github.com/knyar/nginx-lua-prometheus.git'
-    dest: /opt/prometheus-lua
+    dest: /etc/nginx/node_exporter
 
 
 - name: Create /etc/nginx/nginx.conf
@@ -51,7 +76,7 @@
 
 - name: systemctl daemon-reload
   ansible.builtin.systemd:
-    enabled: no
+    enabled: yes
     daemon_reload: yes
     name: nginx.service
 
@@ -63,9 +88,20 @@
     enabled: yes
 
 
-- name: Create zabbix-agent template
+- name: Create zabbix-agent config
   template:
     src: zabbix_agentd.conf.j2
     dest: /etc/zabbix/zabbix_agentd.conf
     mode: 0644
   notify: Restart zabbix-agent
+
+
+- name: Create sshd_config
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    mode: 0644
+
+- name: Reboot server
+  reboot:
+    reboot_timeout: 600

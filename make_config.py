@@ -53,6 +53,15 @@ if __name__ == '__main__':
             
         if _config.ssl_vhost_fullchain_exist and _config.ssl_vhost_privkey_exist:
             _config.ssl_enabled = True
+            rc = run_playbook('provision_ssl_cert.yml', webdomain.get_ansible_extra_vars(_config))
+
+            if rc != 0:
+                continue
+
+        _config = ConfigParser(webdomain)
+            
+        if _config.ssl_vhost_fullchain_exist and _config.ssl_vhost_privkey_exist:
+            _config.ssl_enabled = True
             rc = run_playbook('configure_webdomain.yml', webdomain.get_ansible_extra_vars(_config))
 
             if rc != 0:
