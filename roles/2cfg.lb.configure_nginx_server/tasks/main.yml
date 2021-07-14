@@ -1,26 +1,17 @@
 ---
 # tasks file for 2cfg.lb.configure_nginx_server
 
-- name: Creates directory
-  file:
-    path: /etc/systemd/system/nginx.service.d
+- name: Create nginx directory
+  ansible.builtin.file:
+    path: "{{ item }}"
     state: directory
+  loop:
+    - /etc/nginx
+    - /etc/nginx/www
+    - /etc/nginx/sslcert
+    - /etc/nginx/sites-enabled
+    - /etc/systemd/system/openresty.service.d
 
-- name: Creates directory
-  file:
-    path: /etc/nginx/www
-    state: directory
-
-- name: Creates directory
-  file:
-    path: /etc/nginx/sslcert
-    state: directory
-
-
-- name: Remove default vhost configuration file
-  file:
-    path: /etc/nginx/sites-enabled/default
-    state: absent
 
 - name: Set a hostname
   ansible.builtin.hostname:
@@ -40,23 +31,21 @@
     mode: 0644
 
 
-- name: Create /etc/systemd/system/nginx.service.d/override.conf
+- name: Create /etc/systemd/system/openresty.service.d/override.conf
   template:
     src: nginx-override.conf.j2
-    dest: /etc/systemd/system/nginx.service.d/override.conf
+    dest: /etc/systemd/system/openresty.service.d/override.conf
     mode: 0644
 
 
-- name: Copying dhparams
-  copy:
-    src: /etc/nginx/sslcert/ssl-dhparams.pem
-    dest: /etc/nginx/sslcert/ssl-dhparams.pem
-    mode: 0644
+- name: Generate Diffie-Hellman parameters with the default size (4096 bits)
+  community.crypto.openssl_dhparam:
+    path: /etc/nginx/sslcert/ssl-dhparams.pem
 
 
 - name: Copying index.html
-  copy:
-    src: /etc/nginx/www/index.html
+  template:
+    src: index.html
     dest: /etc/nginx/www/index.html
     mode: 0644
 
@@ -67,10 +56,10 @@
     dest: /etc/nginx/node_exporter
 
 
-- name: Create /etc/nginx/nginx.conf
+- name: Create /usr/local/openresty/nginx/conf/nginx.conf
   template:
     src: nginx.conf.j2
-    dest: /etc/nginx/nginx.conf
+    dest: /usr/local/openresty/nginx/conf/nginx.conf
     mode: 0644
 
 
@@ -78,7 +67,7 @@
   ansible.builtin.systemd:
     enabled: yes
     daemon_reload: yes
-    name: nginx.service
+    name: openresty.service
 
 
 - name: Enable zabbix-agent

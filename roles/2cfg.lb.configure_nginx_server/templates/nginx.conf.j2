@@ -99,7 +99,7 @@ http {
 
     server {
     listen {{ iface.vlan30.ipaddr }}:9119;
-    server_name           metrics;
+    server_name           {{ hostname }};
 
     allow                 127.0.0.1;
     allow                 192.168.44.83;
