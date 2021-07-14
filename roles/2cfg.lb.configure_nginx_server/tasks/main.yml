@@ -7,10 +7,12 @@
     state: directory
   loop:
     - /etc/nginx
+    - /etc/nginx/conf.d
     - /etc/nginx/www
     - /etc/nginx/sslcert
     - /etc/nginx/sites-enabled
     - /etc/systemd/system/openresty.service.d
+    - /var/log/nginx
 
 
 - name: Set a hostname
@@ -23,6 +25,11 @@
     dest: /etc/sysctl.conf
     mode: 0644
 
+- name: Configure ntp.conf
+  template:
+    src: ntp.conf.j2
+    dest: /etc/ntp.conf
+    mode: 0644
 
 - name: Configure limits.conf
   template:
@@ -38,9 +45,10 @@
     mode: 0644
 
 
-- name: Generate Diffie-Hellman parameters with the default size (4096 bits)
+- name: Generate Diffie-Hellman parameters with size 2048 bits
   community.crypto.openssl_dhparam:
     path: /etc/nginx/sslcert/ssl-dhparams.pem
+    size: 2048
 
 
 - name: Copying index.html
@@ -68,6 +76,12 @@
     enabled: yes
     daemon_reload: yes
     name: openresty.service
+
+
+- name: Restart openresty.service
+  ansible.builtin.service:
+    name: openresty
+    state: restarted
 
 
 - name: Enable zabbix-agent

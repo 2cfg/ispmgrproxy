@@ -1,7 +1,7 @@
 user www-data;
 worker_processes auto;
-pid /run/nginx.pid;
-include /etc/nginx/modules-enabled/*.conf;
+
+pid        logs/nginx.pid;
 
 worker_rlimit_nofile 512000;
 
@@ -45,7 +45,7 @@ http {
         open_file_cache_min_uses 2;
         open_file_cache_errors on;
 
-        include /etc/nginx/mime.types;
+        include mime.types;
         default_type application/octet-stream;
 
         ##

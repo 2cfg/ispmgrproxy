@@ -3,6 +3,8 @@
         listen       {{ listen_server }}:80;
         server_name  {{ server_names }};
 
+        index {{ dirindex | default('index.html index.php') }}
+
         location ^~ /.well-known/acme-challenge/ {
                 root /etc/nginx/www;
         }
@@ -10,7 +12,6 @@
 	access_log  /var/log/nginx/{{ web_domain }}.access.log;
         error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
 
-	index index.html;
 	root /etc/nginx/www;
 
     }

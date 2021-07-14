@@ -4,6 +4,8 @@
         listen       {{ listen_server }}:80;
         server_name  {{ server_names }};
 
+        index {{ dirindex | default('index.html index.php') }}
+
         access_log  /var/log/nginx/{{ web_domain }}.access.log;
 	error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
 

@@ -40,6 +40,34 @@ LOCK TABLES `updates` WRITE;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
+
+
+--
+-- Table structure for table `updates_web`
+--
+
+DROP TABLE IF EXISTS `updates_web`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `updates_web` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `domain` varchar(253) NOT NULL,
+  `updated_at` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1424 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `updates_web`
+--
+
+LOCK TABLES `updates_web` WRITE;
+/*!40000 ALTER TABLE `updates_web` DISABLE KEYS */;
+/*!40000 ALTER TABLE `updates_web` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
@@ -57,6 +85,7 @@ FOR EACH ROW
 BEGIN
 SELECT `name` INTO @domain FROM `powerdns`.`domains` WHERE id = NEW.domain_id;
 INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
 END//
 
 CREATE TRIGGER `powerdns`.`update_record` AFTER UPDATE ON `powerdns`.`records`
@@ -64,6 +93,7 @@ FOR EACH ROW
 BEGIN
 SELECT `name` INTO @domain FROM `powerdns`.`domains` WHERE id = NEW.domain_id;
 INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
 END//
 
 CREATE TRIGGER `powerdns`.`delete_record` AFTER DELETE ON `powerdns`.`records`
@@ -71,6 +101,7 @@ FOR EACH ROW
 BEGIN
 SELECT `name` INTO @domain FROM `powerdns`.`domains` WHERE id = OLD.domain_id;
 INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
 END//
 
 DELIMITER ;

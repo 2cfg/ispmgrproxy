@@ -11,7 +11,7 @@ def get_webdomains_to_update():
         cnx = connection.MySQLConnection(**config.database)
         cursor = cnx.cursor(buffered=True)
 
-        query = ("SELECT DISTINCT domain FROM dnsmon.updates")
+        query = ("SELECT DISTINCT domain FROM dnsmon.updates_web")
         cursor.execute(query)
 
         for (domain,) in cursor.fetchall():
@@ -19,23 +19,23 @@ def get_webdomains_to_update():
             if '*' in str(domain):
                 continue
             
-            query = ("SELECT updated_at FROM dnsmon.updates WHERE domain = '{}' ORDER BY updated_at DESC LIMIT 1;".format(domain))
+            query = ("SELECT updated_at FROM dnsmon.updates_web WHERE domain = '{}' ORDER BY updated_at DESC LIMIT 1;".format(domain))
             cursor.execute(query)
             (updated_at, ) = cursor.fetchone()
 
-            query = ("SELECT id, active, int_suspend, email from ispmgr.webdomain WHERE name_idn = '{}'".format(domain))
+            query = ("SELECT id, active, int_suspend, email, dirindex from ispmgr.webdomain WHERE name_idn = '{}'".format(domain))
 
             cursor.execute(query)
             result = cursor.fetchone()
             if not result:
                 continue
-            (id, active, int_suspend, email) = result
+            (id, active, int_suspend, email, dirindex) = result
 
             query = ("select ip.name as ip_addr from ispmgr.ipaddr as ip join ispmgr.ipaddr_webdomain as ipw on ip.id = ipw.ipaddr where ipw.webdomain = {}").format(id)
             cursor.execute(query)
             (ip_addr, ) = cursor.fetchone()
 
-            webdomain = WebDomain(id=id, ip_addr=ip_addr, name_idn=domain, active=active, updated_at=updated_at, suspended=int_suspend, email=email)
+            webdomain = WebDomain(id=id, ip_addr=ip_addr, name_idn=domain, active=active, dirindex=dirindex, updated_at=updated_at, suspended=int_suspend, email=email)
             domains.append(webdomain)
 
         cursor.close()
@@ -91,7 +91,7 @@ def remove_from_queue(webdomain):
         cnx = connection.MySQLConnection(**config.database)
         cursor = cnx.cursor(buffered=True)
 
-        query = ("DELETE FROM dnsmon.updates WHERE domain = '{}' and updated_at <= {}".
+        query = ("DELETE FROM dnsmon.updates_web WHERE domain = '{}' and updated_at <= {}".
           format(webdomain.name_idn, webdomain.updated_at))
         cursor.execute(query)
 

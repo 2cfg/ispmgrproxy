@@ -3,7 +3,7 @@ import json
 
 class WebDomain(object):
 
-    def __init__(self, id, ip_addr, name_idn, email, updated_at, active=True, suspended=False):
+    def __init__(self, id, ip_addr, name_idn, email, dirindex, updated_at, active=True, suspended=False):
 
         self.id = id
         self.ip_addr = ip_addr
@@ -13,6 +13,7 @@ class WebDomain(object):
         self.records = []
         self.email = email
         self.updated_at = updated_at
+        self.dirindex = dirindex
 
     def get_ansible_extra_vars(self, _config):
 
@@ -37,6 +38,7 @@ class WebDomain(object):
             "server_names": " ".join(str(r) for r in self.records),
             "owner_email": self.email,
             "domain_active": self.active,
+            "dirindex": self.dirindex,
             "subject_alt_name": ",".join(r for r in subj_alt_records)
         }
 
