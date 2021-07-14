@@ -20,6 +20,6 @@
 
 - name: systemctl daemon-reload
   ansible.builtin.systemd:
-    enabled: yes
+    enabled: no
     daemon_reload: yes
     name: bgpd.service

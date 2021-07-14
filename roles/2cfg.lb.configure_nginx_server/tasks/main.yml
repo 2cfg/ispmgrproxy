@@ -14,6 +14,11 @@
     - /etc/systemd/system/openresty.service.d
     - /var/log/nginx
 
+- name: Creates @reboot cronjob
+  ansible.builtin.cron:
+    name: "synchronize services"
+    special_time: reboot
+    job: "sleep 10 && /usr/bin/rsync -a root@192.168.47.102:/etc/nginx/sites-enabled /etc/nginx && /usr/bin/rsync -a root@192.168.47.102:/etc/nginx/sslcert /etc/nginx && systemctl start openresty && sleep 10 && systemctl start bgpd"
 
 - name: Set a hostname
   ansible.builtin.hostname:
@@ -73,7 +78,7 @@
 
 - name: systemctl daemon-reload
   ansible.builtin.systemd:
-    enabled: yes
+    enabled: no
     daemon_reload: yes
     name: openresty.service
 
