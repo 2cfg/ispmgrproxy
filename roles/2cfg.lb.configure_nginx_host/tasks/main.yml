@@ -6,7 +6,7 @@
     src: "{{server_template}}"
     dest: /etc/nginx/sites-enabled/{{ web_domain }}.conf
     mode: 0644
-
+  
 
 - name: Check nginx config
   shell: "/usr/bin/openresty -t"
@@ -26,6 +26,7 @@
   delegate_to: "{{ item }}"
   delegate_facts: true
   loop: "{{ groups['ngx_lb'] }}"
+  ignore_unreachable: yes
 
 
 - name: Pause for 2 seconds
@@ -39,13 +40,14 @@
   delegate_to: "{{ item }}"
   loop: "{{ groups['ngx_lb'] }}"
   ignore_errors: yes
+  ignore_unreachable: yes
 
 
 - name: Check nginx test status results for errors
   set_fact:
     nginx_config_error: 1
     cacheable: yes
-  when: item.rc != 0
+  when: item.rc is defined and item.rc != 0
   loop: "{{ nginx_config_status.results }}"
 
 
@@ -62,4 +64,5 @@
   delegate_to: "{{ item }}"
   loop: "{{ groups['ngx_all'] }}"
   when: nginx_config_error == 0
+  ignore_unreachable: yes
 

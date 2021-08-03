@@ -8,6 +8,7 @@
     mode: pull
   delegate_to: "{{ item }}"
   loop: "{{ groups['ngx_lb'] }}"
+  ignore_unreachable: yes
 
     
 - name: Copying certificate and chain
@@ -17,3 +18,4 @@
     mode: pull
   delegate_to: "{{ item }}"
   loop: "{{ groups['ngx_lb'] }}"
+  ignore_unreachable: yes

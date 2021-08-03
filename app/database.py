@@ -27,7 +27,7 @@ def get_webdomains_to_update():
             cursor.execute(query)
             (updated_at, ) = cursor.fetchone()
 
-            query = ("SELECT id, active, secure, ssl_cert, redirect_http, email, dirindex, users from ispmgr.webdomain WHERE name_idn = '{}'".format(domain))
+            query = ("SELECT id, active, secure, ssl_cert, redirect_http, users from ispmgr.webdomain WHERE name_idn = '{}'".format(domain))
 
             cursor.execute(query)
             result = cursor.fetchone()
@@ -36,7 +36,7 @@ def get_webdomains_to_update():
                 domains.append(webdomain)
                 continue
 
-            (id, active, secure, ssl_cert, redirect_http, email, dirindex, users) = result
+            (id, active, secure, ssl_cert, redirect_http, users) = result
 
             query = ("select ip.name as ip_addr from ispmgr.ipaddr as ip join ispmgr.ipaddr_webdomain as ipw on ip.id = ipw.ipaddr where ipw.webdomain = {}").format(id)
             cursor.execute(query)
@@ -45,16 +45,9 @@ def get_webdomains_to_update():
             query = ("select name from ispmgr.users where id = {}").format(users)
             cursor.execute(query)
             (owner, ) = cursor.fetchone()
-
-            if secure == 'on':
-                query = ("select valid_after, type from ispmgr.sslcert where name  = '{}'").format(ssl_cert)
-                cursor.execute(query)
-                (ssl_valid_after, ssl_type, ) = cursor.fetchone()
             
-            webdomain = WebDomain(id=id, ip_addr=ip_addr, name_idn=domain, active=active, 
-                                  ssl_valid_after=ssl_valid_after, ssl_type=ssl_type,
-                                  dirindex=dirindex, updated_at=updated_at, secure=secure, 
-                                  ssl_cert=ssl_cert, email=email, owner=owner, redirect_http=redirect_http)
+            webdomain = WebDomain(id=id, ip_addr=ip_addr, name_idn=domain, active=active, updated_at=updated_at,
+                                 secure=secure, ssl_cert=ssl_cert, owner=owner, redirect_http=redirect_http)
 
             domains.append(webdomain)
 
@@ -83,13 +76,10 @@ def fill_webdomain_records(webdomain):
         cursor.execute(query)
 
         for (record,) in cursor.fetchall():
-
-            # if '*' in str(record):
-            #     continue
             
             webdomain_record = WebDomainRecord(name_idn=record)
             webdomain.records.append(webdomain_record)
-            # print("Process web domain record: {}".format(webdomain_record.name_idn))
+
 
         cursor.close()
 
