@@ -10,6 +10,65 @@ events {
     # multi_accept on;
 }
 
+# mail proxy
+stream {
+        log_format proxy '$remote_addr [$time_local] '
+                 '$protocol $status $bytes_sent $bytes_received '
+                 '$session_time "$upstream_addr" '
+                 '"$upstream_bytes_sent" "$upstream_bytes_received" "$upstream_connect_time"';
+
+        access_log  /var/log/nginx/access.stream.log proxy;
+
+        server {
+                listen 25;
+
+                #protocol smtp;
+                proxy_pass {{ ispmanager_node }}:25;
+        }
+
+        server {
+                listen 465;
+
+                #protocol smtp;
+                proxy_pass {{ ispmanager_node }}:465;
+        }
+        server {
+                listen 587;
+
+                #protocol smtp;
+                proxy_pass {{ ispmanager_node }}:587;
+        }
+
+        server {
+                listen 110;
+
+                #protocol pop3;
+                proxy_pass {{ ispmanager_node }}:110;
+        }
+        server {
+                listen 143;
+
+                #protocol imap;
+                proxy_pass {{ ispmanager_node }}:143;
+        }
+
+        server {
+                listen 993;
+
+                #protocol dovecot;
+                proxy_pass {{ ispmanager_node }}:993;
+        }
+
+        server {
+                listen 995;
+
+                #dovecot;
+                proxy_pass {{ ispmanager_node }}:995;
+        }
+}
+
+
+# http proxy
 http {
 
         ##

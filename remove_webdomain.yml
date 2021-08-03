@@ -1,4 +1,4 @@
-- name: Configure ssl certificate
+- name: Configure nginx vhost
   hosts: nginx-master
   become: yes # sudo
   ignore_unreachable: yes
@@ -10,5 +10,4 @@
       msg: "Debug variable web_domain: {{ web_domain }}"
 
   roles:
-    - role: 2cfg.lb.fetch_ssl_certificate
-    - role: 2cfg.lb.provisioning_ssl_certificate
+    - role: 2cfg.lb.remove_webdomain

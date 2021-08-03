@@ -1,0 +1,21 @@
+---
+# tasks file for 2cfg.lb.remove_webdomain
+- name: Remove file (delete file)
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/{{ web_domain }}.conf
+    state: absent
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['ngx_all'] }}"
+
+
+- name: Check nginx config
+  shell: "/usr/bin/openresty -t"
+  register: nginx_config_status
+
+- name: nginx reload
+  service:
+    name=openresty
+    state=reloaded
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['ngx_all'] }}"
+  when: nginx_config_status.rc == 0

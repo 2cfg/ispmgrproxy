@@ -4,7 +4,8 @@ import os
 import sys
 import app.database as db
 from app.configparser import ConfigParser
-from app.domainresolver import DomainResolver
+# from app.domainresolver import DomainResolver
+import json
 
 def run_playbook(playbook, extra_vars):
     out, err, rc = ansible_runner.run_command(
@@ -22,66 +23,77 @@ def run_playbook(playbook, extra_vars):
 if __name__ == '__main__':
 
     webdomains = db.get_webdomains_to_update()
+
     for webdomain in webdomains:
-        db.fill_webdomain_records(webdomain)
 
-        _config = ConfigParser(webdomain)
-
-        # новый домен
-        if not _config.ngx_vhost_config_exist: 
-            # создать конфиг
-            rc = run_playbook('configure_webdomain.yml', webdomain.get_ansible_extra_vars(_config))
-
-            if rc != 0:
+        # remove old configurations
+        if hasattr(webdomain, "removed"):
+            if webdomain.removed:
+                extra_vars = "--extra-vars '{}'".format(json.dumps({"web_domain": webdomain.name_idn}))
+                rc = run_playbook('remove_webdomain.yml', extra_vars)
+                db.remove_from_queue(webdomain)
                 continue
 
-            _config = ConfigParser(webdomain)
+        db.fill_webdomain_records(webdomain)
+        _config = ConfigParser(webdomain)
 
-        # проверить разрешение имён
-        resolver = DomainResolver(webdomain.records)
-        if not resolver.resolve_all():
+        # скопировать SSL-сертификат, при наличии
+        rc = run_playbook('configure_ssl_cert.yml', webdomain.get_ansible_extra_vars(_config))
+   
+        # создать конфиг
+        rc = run_playbook('configure_webdomain.yml', webdomain.get_ansible_extra_vars(_config))
+
+        if rc != 0:
             continue
 
-        if _config.required_new_ssl_cert:
-            # выпустить сертификат  
-            rc = run_playbook('configure_ssl_cert.yml', webdomain.get_ansible_extra_vars(_config))
+        #     _config = ConfigParser(webdomain)
 
-            if rc != 0:
-                continue
+        # # проверить разрешение имён
+        # resolver = DomainResolver(webdomain.records)
+        # if not resolver.resolve_all():
+        #     continue
 
-        _config = ConfigParser(webdomain)
+        # if _config.required_new_ssl_cert:
+        #     # выпустить сертификат  
+        #     rc = run_playbook('configure_ssl_cert.yml', webdomain.get_ansible_extra_vars(_config))
+
+        #     if rc != 0:
+        #         continue
+
+        # _config = ConfigParser(webdomain)
             
-        if _config.ssl_vhost_fullchain_exist and _config.ssl_vhost_privkey_exist:
-            _config.ssl_enabled = True
-            rc = run_playbook('provision_ssl_cert.yml', webdomain.get_ansible_extra_vars(_config))
+        # if _config.ssl_vhost_fullchain_exist and _config.ssl_vhost_privkey_exist:
+        #     _config.ssl_enabled = True
+        #     rc = run_playbook('provision_ssl_cert.yml', webdomain.get_ansible_extra_vars(_config))
 
-            if rc != 0:
-                continue
+        #     if rc != 0:
+        #         continue
 
-        _config = ConfigParser(webdomain)
+        # _config = ConfigParser(webdomain)
             
-        if _config.ssl_vhost_fullchain_exist and _config.ssl_vhost_privkey_exist:
-            _config.ssl_enabled = True
-            rc = run_playbook('configure_webdomain.yml', webdomain.get_ansible_extra_vars(_config))
+        # if _config.ssl_vhost_fullchain_exist and _config.ssl_vhost_privkey_exist:
+        #     _config.ssl_enabled = True
+        #     rc = run_playbook('configure_webdomain.yml', webdomain.get_ansible_extra_vars(_config))
 
-            if rc != 0:
-                continue
+        #     if rc != 0:
+        #         continue
+
+        
+        # _config = ConfigParser(webdomain)
+
+        # if not _config.ngx_vhost_config_exist:
+        #     print("ngx_vhost_config_exist")
+        #     continue
+        # if not _config.ssl_vhost_fullchain_exist:
+        #     print("ssl_vhost_fullchain_exist")
+        #     continue
+        # if not _config.ssl_vhost_privkey_exist:
+        #     print("ssl_vhost_privkey_exist")
+        #     continue
+        # if not _config.ssl_enabled:
+        #     print("ssl_enabled")
+        #     continue
 
         # обновить в БД инфомрацию о том, что операция выполнена
-        _config = ConfigParser(webdomain)
-
-        if not _config.ngx_vhost_config_exist:
-            print("ngx_vhost_config_exist")
-            continue
-        if not _config.ssl_vhost_fullchain_exist:
-            print("ssl_vhost_fullchain_exist")
-            continue
-        if not _config.ssl_vhost_privkey_exist:
-            print("ssl_vhost_privkey_exist")
-            continue
-        if not _config.ssl_enabled:
-            print("ssl_enabled")
-            continue
-
         db.remove_from_queue(webdomain)
-        print("remove_from_queue")
+        # print("remove_from_queue")

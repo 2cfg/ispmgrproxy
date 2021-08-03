@@ -12,7 +12,7 @@
     
 - name: Copying certificate and chain
   synchronize:
-    src: /etc/nginx/sslcert/{{ web_domain }}-fullchain.crt
+    src: /etc/nginx/sslcert/{{ web_domain }}.fullchain.crt
     dest: /etc/nginx/sslcert/
     mode: pull
   delegate_to: "{{ item }}"

@@ -1,17 +1,11 @@
-# $ssl:on$active:on$server_names:{{ server_names }}
+# $secure:{{ secure }}$active:{{ domain_active }}$ssl_type:{{ ssl_type }}$ssl_valid_after:{{ ssl_valid_after }}$ssl_cert:{{ ssl_cert }}$redirect_http={{ redirect_http }}$server_names:{{ server_names }}
 
     server {
         listen       {{ listen_server }}:443 ssl http2;
         server_name  {{ server_names }};
 
-        index {{ dirindex | default('index.html index.php') }}
-
         access_log  /var/log/nginx/{{ web_domain }}.access.log;
         error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
-
-        location ^~ /.well-known/acme-challenge/ {
-            root /etc/nginx/www;
-        }
 
         location /
         {
@@ -22,7 +16,7 @@
                 proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        ssl_certificate /etc/nginx/sslcert/{{ web_domain }}-fullchain.crt; 
+        ssl_certificate /etc/nginx/sslcert/{{ web_domain }}.fullchain.crt; 
         ssl_certificate_key /etc/nginx/sslcert/{{ web_domain }}.private.key;
 
         ssl_session_cache shared:le_nginx_SSL:10m;
@@ -44,6 +38,16 @@
         listen {{ listen_server }}:80;
         server_name  {{ server_names }};
 
-	    return 301 https://$host$request_uri;
+        access_log  /var/log/nginx/{{ web_domain }}.access.log;
+        error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
+
+        location /
+        {
+                proxy_pass  https://{{ ispmanager_node }}:443/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+        }
 
     }

@@ -104,4 +104,35 @@ INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP
 INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
 END//
 
+CREATE TRIGGER `ispmgr`.`update_webdomain` AFTER UPDATE ON `ispmgr`.`webdomain`
+FOR EACH ROW
+BEGIN
+   IF !(NEW.active <=> OLD.active) THEN
+      SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE id = NEW.id;
+      INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   END IF;
+   IF !(NEW.secure <=> OLD.secure) THEN
+      SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE id = NEW.id;
+      INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   END IF;
+   IF !(NEW.ssl_cert <=> OLD.ssl_cert) THEN
+      SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE id = NEW.id;
+      INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   END IF;
+END//
+
+CREATE TRIGGER `ispmgr`.`update_sslcert` AFTER UPDATE ON `ispmgr`.`sslcert`
+FOR EACH ROW
+BEGIN
+   IF !(NEW.valid_after <=> OLD.valid_after) THEN
+      SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE `webdomain`.`ssl_cert` = NEW.name;
+      INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   END IF;
+   IF !(NEW.type <=> OLD.type) THEN
+      SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE `webdomain`.`ssl_cert` = NEW.name;
+      INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   END IF;
+END//
+
+
 DELIMITER ;

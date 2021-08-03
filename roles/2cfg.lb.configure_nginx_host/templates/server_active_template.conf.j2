@@ -1,17 +1,12 @@
-# $ssl:off$active:on$server_names:{{ server_names }}
+# $secure:{{ secure }}$active:{{ domain_active }}$ssl_type:{{ ssl_type }}$ssl_valid_after:{{ ssl_valid_after }}$ssl_cert:{{ ssl_cert }}$redirect_http={{ redirect_http }}$server_names:{{ server_names }}
 
     server {
         listen       {{ listen_server }}:80;
         server_name  {{ server_names }};
 
-        index {{ dirindex | default('index.html index.php') }}
-
         access_log  /var/log/nginx/{{ web_domain }}.access.log;
 	error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
 
-	location ^~ /.well-known/acme-challenge/ {
-		root /etc/nginx/www;
-	}
 
         location /
         {

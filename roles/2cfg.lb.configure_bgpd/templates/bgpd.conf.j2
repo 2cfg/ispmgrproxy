@@ -5,6 +5,7 @@ enable password popugai
 router bgp 65000
  bgp router-id {{ iface.bgpd.ipaddr }}
  network {{ vip_address }}
+ neighbor 192.168.51.103 remote-as 65000
  neighbor 192.168.51.111 remote-as 65000
  neighbor 192.168.51.112 remote-as 65000
  neighbor 192.168.51.113 remote-as 65000

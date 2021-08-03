@@ -24,6 +24,9 @@ class DomainResolver(object):
             return False
 
         for record in self.records:
+            if '*' in str(record):
+                continue
+
             data = self._resolve(str(record))
 
             for addr in config.lb_ipaddr_list:

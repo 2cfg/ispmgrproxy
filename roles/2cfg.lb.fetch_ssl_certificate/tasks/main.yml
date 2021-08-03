@@ -1,0 +1,30 @@
+---
+# tasks file for 2cfg.lb.fetch_ssl_certificate
+
+# Если самоподписанный, то копируем .crt, если существующий, переписываем сверху crtca
+- name: Fetch SSL certificate
+  fetch:
+    src: /var/www/httpd-cert/{{ owner }}/{{ ssl_cert }}.crt
+    dest: /etc/nginx/sslcert/{{ web_domain }}.fullchain.crt
+    flat: yes
+    fail_on_missing: no
+  delegate_to: hosting.adman.cloud
+  
+
+- name: Fetch SSL certificate
+  fetch:
+    src: /var/www/httpd-cert/{{ owner }}/{{ ssl_cert }}.crtca
+    dest: /etc/nginx/sslcert/{{ web_domain }}.fullchain.crt
+    flat: yes
+    fail_on_missing: no
+  delegate_to: hosting.adman.cloud
+
+
+- name: Fetch SSL Private key
+  fetch:
+    src: /var/www/httpd-cert/{{ owner }}/{{ ssl_cert }}.key
+    dest: /etc/nginx/sslcert/{{ web_domain }}.private.key
+    flat: yes
+    fail_on_missing: no
+  delegate_to: hosting.adman.cloud
+

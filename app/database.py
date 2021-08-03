@@ -11,9 +11,13 @@ def get_webdomains_to_update():
         cnx = connection.MySQLConnection(**config.database)
         cursor = cnx.cursor(buffered=True)
 
+        ssl_valid_after = 'NULL'
+        ssl_cert = 'NULL'
+        ssl_type = 'NULL'
+
         query = ("SELECT DISTINCT domain FROM dnsmon.updates_web")
         cursor.execute(query)
-
+        
         for (domain,) in cursor.fetchall():
 
             if '*' in str(domain):
@@ -23,19 +27,35 @@ def get_webdomains_to_update():
             cursor.execute(query)
             (updated_at, ) = cursor.fetchone()
 
-            query = ("SELECT id, active, int_suspend, email, dirindex from ispmgr.webdomain WHERE name_idn = '{}'".format(domain))
+            query = ("SELECT id, active, secure, ssl_cert, redirect_http, email, dirindex, users from ispmgr.webdomain WHERE name_idn = '{}'".format(domain))
 
             cursor.execute(query)
             result = cursor.fetchone()
             if not result:
+                webdomain = type('WebDomain', (object,), {"name_idn":domain, "updated_at": updated_at, "removed": True})
+                domains.append(webdomain)
                 continue
-            (id, active, int_suspend, email, dirindex) = result
+
+            (id, active, secure, ssl_cert, redirect_http, email, dirindex, users) = result
 
             query = ("select ip.name as ip_addr from ispmgr.ipaddr as ip join ispmgr.ipaddr_webdomain as ipw on ip.id = ipw.ipaddr where ipw.webdomain = {}").format(id)
             cursor.execute(query)
             (ip_addr, ) = cursor.fetchone()
 
-            webdomain = WebDomain(id=id, ip_addr=ip_addr, name_idn=domain, active=active, dirindex=dirindex, updated_at=updated_at, suspended=int_suspend, email=email)
+            query = ("select name from ispmgr.users where id = {}").format(users)
+            cursor.execute(query)
+            (owner, ) = cursor.fetchone()
+
+            if secure == 'on':
+                query = ("select valid_after, type from ispmgr.sslcert where name  = '{}'").format(ssl_cert)
+                cursor.execute(query)
+                (ssl_valid_after, ssl_type, ) = cursor.fetchone()
+            
+            webdomain = WebDomain(id=id, ip_addr=ip_addr, name_idn=domain, active=active, 
+                                  ssl_valid_after=ssl_valid_after, ssl_type=ssl_type,
+                                  dirindex=dirindex, updated_at=updated_at, secure=secure, 
+                                  ssl_cert=ssl_cert, email=email, owner=owner, redirect_http=redirect_http)
+
             domains.append(webdomain)
 
         cursor.close()
@@ -64,8 +84,8 @@ def fill_webdomain_records(webdomain):
 
         for (record,) in cursor.fetchall():
 
-            if '*' in str(record):
-                continue
+            # if '*' in str(record):
+            #     continue
             
             webdomain_record = WebDomainRecord(name_idn=record)
             webdomain.records.append(webdomain_record)
