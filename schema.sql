@@ -68,6 +68,33 @@ UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 
+--
+-- Table structure for table `webdomain_options`
+--
+
+DROP TABLE IF EXISTS `webdomain_options`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `webdomain_options` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `domain` varchar(253) NOT NULL,
+  `botguard` char(3) NOT NULL DEFAULT 'off',
+  `l7filter` char(3) NOT NULL DEFAULT 'off',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1424 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `webdomain_options`
+--
+
+LOCK TABLES `webdomain_options` WRITE;
+/*!40000 ALTER TABLE `webdomain_options` DISABLE KEYS */;
+/*!40000 ALTER TABLE `webdomain_options` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
@@ -83,25 +110,25 @@ DELIMITER //
 CREATE TRIGGER `powerdns`.`insert_record` AFTER INSERT ON `powerdns`.`records`
 FOR EACH ROW
 BEGIN
-SELECT `name` INTO @domain FROM `powerdns`.`domains` WHERE id = NEW.domain_id;
-INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
-INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   SELECT `name` INTO @domain FROM `powerdns`.`domains` WHERE id = NEW.domain_id;
+   INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
 END//
 
 CREATE TRIGGER `powerdns`.`update_record` AFTER UPDATE ON `powerdns`.`records`
 FOR EACH ROW
 BEGIN
-SELECT `name` INTO @domain FROM `powerdns`.`domains` WHERE id = NEW.domain_id;
-INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
-INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   SELECT `name` INTO @domain FROM `powerdns`.`domains` WHERE id = NEW.domain_id;
+   INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
 END//
 
 CREATE TRIGGER `powerdns`.`delete_record` AFTER DELETE ON `powerdns`.`records`
 FOR EACH ROW
 BEGIN
-SELECT `name` INTO @domain FROM `powerdns`.`domains` WHERE id = OLD.domain_id;
-INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
-INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   SELECT `name` INTO @domain FROM `powerdns`.`domains` WHERE id = OLD.domain_id;
+   INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
 END//
 
 CREATE TRIGGER `ispmgr`.`update_webdomain` AFTER UPDATE ON `ispmgr`.`webdomain`
@@ -132,6 +159,21 @@ BEGIN
       SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE `webdomain`.`ssl_cert` = NEW.name;
       INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
    END IF;
+END//
+
+CREATE TRIGGER `ispmgr`.`insert_webdomain` AFTER INSERT ON `ispmgr`.`webdomain`
+FOR EACH ROW
+BEGIN
+   SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE `webdomain`.`id` = NEW.id;
+   INSERT INTO `dnsmon`.`webdomain_options` Set domain = @domain;
+END//
+
+
+CREATE TRIGGER `ispmgr`.`delete_webdomain` BEFORE DELETE ON `ispmgr`.`webdomain`
+FOR EACH ROW
+BEGIN
+   SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE `webdomain`.`id` = OLD.id;
+   DELETE FROM `dnsmon`.`webdomain_options` where domain = @domain;
 END//
 
 
