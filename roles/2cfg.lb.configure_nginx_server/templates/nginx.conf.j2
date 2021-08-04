@@ -71,6 +71,10 @@ stream {
 # http proxy
 http {
 
+        proxy_cache_path /var/lib/nginx/proxy_cache levels=1:2 keys_zone=proxy_cache:64m max_size=32G inactive=30d;
+        proxy_cache_key "$scheme$request_method$host$request_uri";
+        proxy_buffering on;
+
         ##
         # Basic Settings
         ##
@@ -157,22 +161,37 @@ http {
     #--
 
     server {
-    listen {{ iface.vlan30.ipaddr }}:9119;
-    server_name           {{ hostname }};
+        listen {{ iface.vlan30.ipaddr }}:9119;
+        server_name           {{ hostname }};
 
-    allow                 127.0.0.1;
-    allow                 192.168.44.83;
-    allow                 ::1;
-    deny                  all;
-    location /metrics {
-        content_by_lua_block {
-        metric_connections:set(ngx.var.connections_reading, {"reading"})
-        metric_connections:set(ngx.var.connections_waiting, {"waiting"})
-        metric_connections:set(ngx.var.connections_writing, {"writing"})
-        prometheus:collect()
+        allow                 127.0.0.1;
+        allow                 192.168.44.83;
+        allow                 ::1;
+        deny                  all;
+        location /metrics {
+                content_by_lua_block {
+                metric_connections:set(ngx.var.connections_reading, {"reading"})
+                metric_connections:set(ngx.var.connections_waiting, {"waiting"})
+                metric_connections:set(ngx.var.connections_writing, {"writing"})
+                prometheus:collect()
+                }
         }
     }
-    }
+
+        server {
+                listen 127.0.0.1:80;
+                server_name stat;
+                keepalive_timeout   0;
+                allow       127.0.0.1;
+                deny        all;
+                access_log  off;
+
+                location /nginx-status {
+                        stub_status     on;
+                }
+
+                error_log /var/log/nginx/nginx-status.error.log notice;
+        }
 
 
         ##

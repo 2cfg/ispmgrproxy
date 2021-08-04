@@ -13,12 +13,14 @@
     - /etc/nginx/sites-enabled
     - /etc/systemd/system/openresty.service.d
     - /var/log/nginx
+    - /var/lib/nginx
+    - /var/lib/nginx/proxy_cache
 
 - name: Creates @reboot cronjob
   ansible.builtin.cron:
     name: "synchronize services"
     special_time: reboot
-    job: "sleep 10 && /usr/bin/rsync -a root@192.168.47.102:/etc/nginx/sites-enabled /etc/nginx && /usr/bin/rsync -a root@192.168.47.102:/etc/nginx/sslcert /etc/nginx && systemctl start openresty && sleep 10 && systemctl start bgpd"
+    job: "sleep 10 && /usr/bin/rsync -a root@192.168.47.102:/etc/nginx/sites-enabled /etc/nginx && /usr/bin/rsync -a  --exclude 'ssl-dhparams.pem' root@192.168.47.102:/etc/nginx/sslcert /etc/nginx && systemctl start openresty && sleep 10 && systemctl start bgpd"
 
 - name: Set a hostname
   ansible.builtin.hostname:
