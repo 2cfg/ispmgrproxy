@@ -1,0 +1,32 @@
+# The primary BotGuard server address.
+# Uncomment and replace "xxx.botguard.net" with address
+# of the primary Botguard server assigned to your website
+#
+botguard_primary_server "srv-xxx-1.botguard.net";
+
+# The secondary BotGuard server address.
+# Uncomment and replace "yyy.botguard.net" with address
+# of the secondary Botguard server assigned to your website
+#
+botguard_secondary_server "srv-xxx-2.botguard.net";
+
+# Enable or disable caching of bot challenge results.
+# Uncomment and set to "on" to enable caching. It saves
+# the traffic, but distorts the BotGuard statistics
+#
+# botguard_cache_results off;
+# The regular expression of skipped URIs
+# By default, the static resources (images, fonts, styles, etc.)
+# don't checked by BotGuard. If you have additional types to
+# bypass checks, uncomment and modify the regular expression.
+#
+botguard_skip "\/.*[^\/]\.(css|js|jpe?g|gif|png|svg|ico|ttf|woff2?|eot|otf|ogg|mp3|mp4|mpg|avi|mov|flv|swf)(\?|$)";
+# Enable or disable BotGuard service
+# By default the module is disabled. Uncomment the line below
+# to turn on the website protection.
+#
+botguard_check off;
+# Multithreading support greatly increases the module performance
+# Comment out the line below if your system doesn't support threads.
+#
+aio threads;

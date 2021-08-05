@@ -6,6 +6,8 @@
         access_log  /var/log/nginx/{{ web_domain }}.access.log;
 	error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
 
+        botguard_check {{ botguard_check }};
+
         location ~* ^.+\.(jpg|jpeg|gif|png|svg|js|css|mp3|ogg|mpe?g|avi|zip|gz|bz2?|rar|swf)$ {
                 proxy_pass  http://{{ ispmanager_node }}:80$request_uri;
                 proxy_set_header Host $host;

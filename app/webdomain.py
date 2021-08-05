@@ -3,7 +3,7 @@ import json
 
 class WebDomain(object):
 
-    def __init__(self, id, ip_addr, name_idn, updated_at, secure, ssl_cert, owner, redirect_http, active=True):
+    def __init__(self, id, ip_addr, name_idn, updated_at, secure, ssl_cert, owner, redirect_http, botguard_check, active=True):
 
         self.id = id
         self.ip_addr = ip_addr
@@ -13,6 +13,7 @@ class WebDomain(object):
         self.ssl_cert = ssl_cert
         self.owner = owner
         self.redirect_http = redirect_http
+        self.botguard_check = botguard_check
         self.records = []
         self.updated_at = updated_at
 
@@ -40,7 +41,8 @@ class WebDomain(object):
             "server_template": server_template,
             "server_names": " ".join(str(r) for r in self.records),
             "ssl_cert": self.ssl_cert,
-            "owner": self.owner
+            "owner": self.owner,
+            "botguard_check": self.botguard_check
         }
 
         json_string = json.dumps(data)   

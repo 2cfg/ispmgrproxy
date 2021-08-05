@@ -10,10 +10,7 @@ def get_webdomains_to_update():
     try:
         cnx = connection.MySQLConnection(**config.database)
         cursor = cnx.cursor(buffered=True)
-
-        ssl_valid_after = 'NULL'
         ssl_cert = 'NULL'
-        ssl_type = 'NULL'
 
         query = ("SELECT DISTINCT domain FROM dnsmon.updates_web")
         cursor.execute(query)
@@ -45,9 +42,17 @@ def get_webdomains_to_update():
             query = ("select name from ispmgr.users where id = {}").format(users)
             cursor.execute(query)
             (owner, ) = cursor.fetchone()
+
+            query = ("select botguard from dnsmon.webdomain_options where domain = '{}'").format(domain)
+            cursor.execute(query)
+            (botguard_check, ) = cursor.fetchone()
+
+            if not botguard_check:
+                botguard_check = 'off'
             
             webdomain = WebDomain(id=id, ip_addr=ip_addr, name_idn=domain, active=active, updated_at=updated_at,
-                                 secure=secure, ssl_cert=ssl_cert, owner=owner, redirect_http=redirect_http)
+                                 secure=secure, ssl_cert=ssl_cert, owner=owner, 
+                                 redirect_http=redirect_http, botguard_check=botguard_check)
 
             domains.append(webdomain)
 

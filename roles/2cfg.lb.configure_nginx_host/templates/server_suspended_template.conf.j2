@@ -5,9 +5,10 @@
 
         index index.php index.html;
 
-	access_log  /var/log/nginx/{{ web_domain }}.access.log;
+	    access_log  /var/log/nginx/{{ web_domain }}.access.log;
         error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
 
-	root /etc/nginx/www;
+        botguard_check off;
 
+	    root /etc/nginx/www;
     }

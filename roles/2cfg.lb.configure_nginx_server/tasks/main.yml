@@ -65,6 +65,20 @@
     mode: 0644
 
 
+- name: Copying botguard module for openresty
+  copy:
+    src: /usr/local/openresty/nginx/ngx_botguard_module.so
+    dest: /usr/local/openresty/nginx/
+    mode: 0644
+
+
+- name: Copying 50-botguard.conf
+  template:
+    src: 50-botguard.conf
+    dest: /etc/nginx/conf.d/50-botguard.conf
+    mode: 0644
+
+
 - name: Clone nginx-lua-prometheus
   ansible.builtin.git:
     repo: 'https://github.com/knyar/nginx-lua-prometheus.git'

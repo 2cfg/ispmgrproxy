@@ -6,6 +6,8 @@
         access_log  /var/log/nginx/{{ web_domain }}.access.log;
         error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
 
+        botguard_check {{ botguard_check }};
+
         location ~* ^.+\.(jpg|jpeg|gif|png|svg|js|css|mp3|ogg|mpe?g|avi|zip|gz|bz2?|rar|swf)$ {
                 proxy_pass  https://{{ ispmanager_node }}:443$request_uri;
                 proxy_set_header Host $host;
@@ -62,6 +64,8 @@
 
         listen {{ listen_server }}:80;
         server_name  {{ server_names }};
+
+        botguard_check off;
 
 	    return 301 https://$host$request_uri;
 

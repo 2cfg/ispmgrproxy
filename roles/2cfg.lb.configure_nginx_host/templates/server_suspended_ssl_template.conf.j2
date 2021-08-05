@@ -8,6 +8,7 @@
         access_log  /var/log/nginx/{{ web_domain }}.access.log;
 	    error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
 
+        botguard_check off;
 	
         root /etc/nginx/www;
 
@@ -35,6 +36,8 @@
 
         access_log  /var/log/nginx/{{ web_domain }}.access.log;
 	    error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
+
+        botguard_check off;
 
         root /etc/nginx/www;
 

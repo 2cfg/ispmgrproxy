@@ -4,3 +4,4 @@ configure_lb_host.yml
 artifacts/
 hosts.yml
 __pycache__/
+roles/2cfg.lb.configure_nginx_server/templates/50-botguard.conf
