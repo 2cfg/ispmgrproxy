@@ -7,7 +7,7 @@ import json
 
 def run_playbook(playbook, extra_vars):
     out, err, rc = ansible_runner.run_command(
-        executable_cmd='ansible-playbook',
+        executable_cmd='/usr/local/bin/ansible-playbook',
         cmdline_args=[playbook, extra_vars],
         host_cwd='/root/ansible-control',
         input_fd=sys.stdin,

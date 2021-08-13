@@ -131,7 +131,7 @@ BEGIN
    INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
 END//
 
-CREATE TRIGGER `ispmgr`.`update_webdomain` AFTER UPDATE ON `ispmgr`.`webdomain`
+CREATE TRIGGER `ispmgr`.`update_record` AFTER UPDATE ON `ispmgr`.`webdomain`
 FOR EACH ROW
 BEGIN
    IF !(NEW.active <=> OLD.active) THEN
@@ -143,6 +143,10 @@ BEGIN
       INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
    END IF;
    IF !(NEW.ssl_cert <=> OLD.ssl_cert) THEN
+      SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE id = NEW.id;
+      INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   END IF;
+   IF !(NEW.redirect_http <=> OLD.redirect_http) THEN
       SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE id = NEW.id;
       INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
    END IF;
@@ -161,12 +165,12 @@ BEGIN
    END IF;
 END//
 
-CREATE TRIGGER `ispmgr`.`insert_webdomain` AFTER INSERT ON `ispmgr`.`webdomain`
-FOR EACH ROW
-BEGIN
-   SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE `webdomain`.`id` = NEW.id;
-   INSERT INTO `dnsmon`.`webdomain_options` Set domain = @domain;
-END//
+-- CREATE TRIGGER `ispmgr`.`insert_webdomain` AFTER INSERT ON `ispmgr`.`webdomain`
+-- FOR EACH ROW
+-- BEGIN
+--    SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE `webdomain`.`id` = NEW.id;
+--    INSERT INTO `dnsmon`.`webdomain_options` Set domain = @domain;
+-- END//
 
 
 CREATE TRIGGER `ispmgr`.`delete_webdomain` BEFORE DELETE ON `ispmgr`.`webdomain`

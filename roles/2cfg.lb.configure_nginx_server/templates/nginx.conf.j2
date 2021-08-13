@@ -73,6 +73,20 @@ stream {
 # http proxy
 http {
 
+        server {
+            listen {{ listen_server }}:80 default_server;
+            server_name {{ listen_server }} _ "";
+            return 444;
+        }
+        server {
+            listen {{ listen_server }}:443 default_server;
+            ssl_certificate /etc/nginx/lb.crt;
+            ssl_certificate_key /etc/nginx/lb.key;
+            server_name {{ listen_server }} _ "";
+            return 444;
+        }
+
+
         proxy_cache_path /var/lib/nginx/proxy_cache levels=1:2 keys_zone=proxy_cache:64m max_size=32G inactive=30d;
         proxy_cache_key "$scheme$request_method$host$request_uri";
         proxy_buffering on;

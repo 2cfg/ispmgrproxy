@@ -79,6 +79,18 @@
     mode: 0644
 
 
+- name: Copying lb default certificate
+  copy:
+    src: /etc/nginx/lb.crt
+    dest: /etc/nginx/
+    mode: 0644
+
+- name: Copying lb default certificate key
+  copy:
+    src: /etc/nginx/lb.key
+    dest: /etc/nginx/
+    mode: 0644
+
 - name: Clone nginx-lua-prometheus
   ansible.builtin.git:
     repo: 'https://github.com/knyar/nginx-lua-prometheus.git'
