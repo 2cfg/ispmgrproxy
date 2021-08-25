@@ -113,6 +113,8 @@ BEGIN
    SELECT `name` INTO @domain FROM `powerdns`.`domains` WHERE id = NEW.domain_id;
    INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
    INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   DELETE FROM `dnsmon`.`updates` WHERE domain = 'tech.adman.website';
+   DELETE FROM `dnsmon`.`updates_web` WHERE domain = 'tech.adman.website';
 END//
 
 CREATE TRIGGER `powerdns`.`update_record` AFTER UPDATE ON `powerdns`.`records`
@@ -121,6 +123,8 @@ BEGIN
    SELECT `name` INTO @domain FROM `powerdns`.`domains` WHERE id = NEW.domain_id;
    INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
    INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   DELETE FROM `dnsmon`.`updates` WHERE domain = 'tech.adman.website';
+   DELETE FROM `dnsmon`.`updates_web` WHERE domain = 'tech.adman.website';
 END//
 
 CREATE TRIGGER `powerdns`.`delete_record` AFTER DELETE ON `powerdns`.`records`
@@ -129,6 +133,8 @@ BEGIN
    SELECT `name` INTO @domain FROM `powerdns`.`domains` WHERE id = OLD.domain_id;
    INSERT INTO `dnsmon`.`updates` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
    INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   DELETE FROM `dnsmon`.`updates` WHERE domain = 'tech.adman.website';
+   DELETE FROM `dnsmon`.`updates_web` WHERE domain = 'tech.adman.website';
 END//
 
 CREATE TRIGGER `ispmgr`.`update_record` AFTER UPDATE ON `ispmgr`.`webdomain`
@@ -147,6 +153,10 @@ BEGIN
       INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
    END IF;
    IF !(NEW.redirect_http <=> OLD.redirect_http) THEN
+      SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE id = NEW.id;
+      INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   END IF;
+      IF !(NEW.techdomain <=> OLD.techdomain) THEN
       SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE id = NEW.id;
       INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
    END IF;
@@ -178,6 +188,20 @@ FOR EACH ROW
 BEGIN
    SELECT `name` INTO @domain FROM `ispmgr`.`webdomain` WHERE `webdomain`.`id` = OLD.id;
    DELETE FROM `dnsmon`.`webdomain_options` where domain = @domain;
+END//
+
+
+CREATE TRIGGER `dnsmon`.`update_webdomain_options` AFTER UPDATE ON `dnsmon`.`webdomain_options`
+FOR EACH ROW
+BEGIN
+   IF !(NEW.botguard <=> OLD.botguard) THEN
+      SELECT `domain` INTO @domain FROM `dnsmon`.`webdomain_options` WHERE id = NEW.id;
+      INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   END IF;
+   IF !(NEW.l7filter <=> OLD.l7filter) THEN
+      SELECT `domain` INTO @domain FROM `dnsmon`.`webdomain_options` WHERE id = NEW.id;
+      INSERT INTO `dnsmon`.`updates_web` Set domain = @domain, updated_at = UNIX_TIMESTAMP();
+   END IF;
 END//
 
 

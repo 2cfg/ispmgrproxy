@@ -8,6 +8,9 @@
         access_log  /var/log/nginx/{{ web_domain }}.access.log;
 	    error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
 
+        {% if l7filter %}
+        access_by_lua_file anti_ddos_challenge.lua;
+        {% endif %}
         botguard_check off;
 	
         root /etc/nginx/www;

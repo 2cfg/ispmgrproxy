@@ -6,6 +6,10 @@
         access_log  /var/log/nginx/{{ web_domain }}.access.log;
         error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
 
+        {% if l7filter %}
+        access_by_lua_file anti_ddos_challenge.lua;
+        {% endif %}
+
         botguard_check {{ botguard_check }};
 
         location ~* ^.+\.(jpg|jpeg|gif|png|svg|js|css|mp3|ogg|mpe?g|avi|zip|gz|bz2?|rar|swf)$ {
@@ -66,7 +70,7 @@
         server_name  {{ server_names }};
 
         botguard_check off;
-
-	    return 301 https://$host$request_uri;
+        
+        return 301 https://$host$request_uri;
 
     }

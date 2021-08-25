@@ -43,16 +43,21 @@ def get_webdomains_to_update():
             cursor.execute(query)
             (owner, ) = cursor.fetchone()
 
-            query = ("select botguard from dnsmon.webdomain_options where domain = '{}'").format(domain)
+            query = ("select botguard, l7filter from dnsmon.webdomain_options where domain = '{}'").format(domain)
             cursor.execute(query)
-            (botguard_check, ) = cursor.fetchone()
+            (botguard_check, l7filter,) = cursor.fetchone()
 
             if not botguard_check:
                 botguard_check = 'off'
-            
+
+            if l7filter == "on":
+                l7filter = True
+            else:
+                l7filter = False
+
             webdomain = WebDomain(id=id, ip_addr=ip_addr, name_idn=domain, active=active, updated_at=updated_at,
                                  secure=secure, ssl_cert=ssl_cert, owner=owner, 
-                                 redirect_http=redirect_http, botguard_check=botguard_check)
+                                 redirect_http=redirect_http, botguard_check=botguard_check, l7filter=l7filter)
 
             domains.append(webdomain)
 

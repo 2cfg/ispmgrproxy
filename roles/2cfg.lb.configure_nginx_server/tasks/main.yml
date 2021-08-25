@@ -12,6 +12,7 @@
     - /etc/nginx/sslcert
     - /etc/nginx/sites-enabled
     - /etc/systemd/system/openresty.service.d
+    - /etc/iptables
     - /var/log/nginx
     - /var/lib/nginx
     - /var/lib/nginx/proxy_cache
@@ -64,6 +65,11 @@
     dest: /etc/nginx/www/index.html
     mode: 0644
 
+- name: Copying iptables rules
+  template:
+    src: rules.v4
+    dest: /etc/iptables/
+    mode: 0644
 
 - name: Copying botguard module for openresty
   copy:
@@ -76,6 +82,12 @@
   template:
     src: 50-botguard.conf
     dest: /etc/nginx/conf.d/50-botguard.conf
+    mode: 0644
+
+- name: Copying antidos lua module for openresty
+  copy:
+    src: anti_ddos_challenge.lua
+    dest: /usr/local/openresty/nginx/
     mode: 0644
 
 
