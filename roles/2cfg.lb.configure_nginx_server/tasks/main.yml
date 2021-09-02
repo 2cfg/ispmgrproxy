@@ -16,12 +16,20 @@
     - /var/log/nginx
     - /var/lib/nginx
     - /var/lib/nginx/proxy_cache
+    - /opt/lb_scripts
+
+
+- name: Configure local_start script
+  template:
+    src: local_start.sh.j2
+    dest: /opt/lb_scripts/local_start.sh
+    mode: 0755
 
 - name: Creates @reboot cronjob
   ansible.builtin.cron:
     name: "synchronize services"
     special_time: reboot
-    job: "sleep 10 && /usr/bin/rsync -a root@192.168.47.102:/etc/nginx/sites-enabled /etc/nginx && /usr/bin/rsync -a  --exclude 'ssl-dhparams.pem' root@192.168.47.102:/etc/nginx/sslcert /etc/nginx && systemctl start openresty && sleep 10 && systemctl start bgpd"
+    job: "/opt/lb_scripts/local_start.sh"
 
 - name: Set a hostname
   ansible.builtin.hostname:
@@ -45,6 +53,11 @@
     dest: /etc/security/limits.conf
     mode: 0644
 
+- name: Configure conntrack hashsize
+  template:
+    src: conntrack.conf
+    dest: /etc/modprobe.d/conntrack.conf
+    mode: 0644
 
 - name: Create /etc/systemd/system/openresty.service.d/override.conf
   template:
