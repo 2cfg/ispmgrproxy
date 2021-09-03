@@ -1,9 +1,9 @@
 #!/bin/bash
 
 sleep 60 
-ethtool -G enp6s0 rx 4096 tx 4096 
+/usr/sbin/ethtool -G enp6s0 rx 4096 tx 4096 
 sleep 10
-ethtool -G enp7s0 rx 4096 tx 4096 
+/usr/sbin/ethtool -G enp7s0 rx 4096 tx 4096 
 sleep 10
 echo "ffffff" > /sys/class/net/enp6s0/queues/rx-0/rps_cpus
 echo "ffffff" > /sys/class/net/enp7s0/queues/rx-0/rps_cpus

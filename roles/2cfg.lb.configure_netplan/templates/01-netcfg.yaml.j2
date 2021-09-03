@@ -3,10 +3,6 @@ network:
   renderer: networkd
   ethernets:
 
-    lo:
-      dhcp4: no
-      addresses: [127.0.0.1/8, {{ vip_address }}]
-
     enp6s0:
       dhcp4: no
     enp7s0:
@@ -23,7 +19,7 @@ network:
         lacp-rate: fast
         mii-monitor-interval: 100
       
-      addresses: [ {{ iface.external.ipaddr }}/{{ iface.external.netmask }}, {{ iface.bgpd.ipaddr }}/{{ iface.bgpd.netmask }} ]
+      addresses: [ {{ iface.external.ipaddr }}/{{ iface.external.netmask }}, {{ iface.bgpd.ipaddr }}/{{ iface.bgpd.netmask }}, {{ vip_address }} ]
       gateway4: {{ iface.external.gateway }}
       nameservers:
           addresses: [8.8.8.8, 8.8.4.4]
