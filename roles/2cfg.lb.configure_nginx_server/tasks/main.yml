@@ -11,13 +11,20 @@
     - /etc/nginx/www
     - /etc/nginx/sslcert
     - /etc/nginx/sites-enabled
+    - /etc/nginx/ip_vhost.d
     - /etc/systemd/system/openresty.service.d
     - /etc/iptables
+    - /etc/rc.local.d
     - /var/log/nginx
     - /var/lib/nginx
     - /var/lib/nginx/proxy_cache
     - /opt/lb_scripts
 
+- name: Copy set_irq_affinity
+  copy:
+    src: set_irq_affinity
+    dest: /opt/lb_scripts/set_irq_affinity
+    mode: 0755
 
 - name: Configure local_start script
   template:
@@ -127,6 +134,27 @@
     src: nginx.conf.j2
     dest: /usr/local/openresty/nginx/conf/nginx.conf
     mode: 0644
+
+
+- name: Create rc.local service
+  template:
+    src: rc-local.service
+    dest: /etc/systemd/system/rc-local.service
+    mode: 0644
+
+
+- name: Create /etc/rc.local
+  template:
+    src: rc.local
+    dest: /etc/rc.local
+    mode: 0755
+
+
+- name: systemctl daemon-reload
+  ansible.builtin.systemd:
+    enabled: yes
+    daemon_reload: yes
+    name: rc-local.service
 
 
 - name: systemctl daemon-reload

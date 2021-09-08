@@ -1,15 +1,22 @@
 #!/bin/bash
 
 sleep 60 
-/usr/sbin/ethtool -G enp6s0 rx 4096 tx 4096 
+/usr/sbin/ethtool -G {{ eth0 }} {{ ring_buffer }} 
 sleep 10
-/usr/sbin/ethtool -G enp7s0 rx 4096 tx 4096 
+/usr/sbin/ethtool -G {{ eth1 }} {{ ring_buffer }} 
 sleep 10
-echo "ffffff" > /sys/class/net/enp6s0/queues/rx-0/rps_cpus
-echo "ffffff" > /sys/class/net/enp7s0/queues/rx-0/rps_cpus
+
+#echo "ffffff" > /sys/class/net/enp6s0/queues/rx-0/rps_cpus
+#echo "ffffff" > /sys/class/net/enp7s0/queues/rx-0/rps_cpus
+
+/opt/lb_scripts/set_irq_affinity local enp3s0f0 
+sleep 2
+/opt/lb_scripts/set_irq_affinity remote enp3s0f1 
+sleep 2
 
 /usr/bin/rsync -a root@{{ master_node }}:/etc/nginx/sites-enabled /etc/nginx
 /usr/bin/rsync -a --exclude 'ssl-dhparams.pem' root@{{ master_node }}:/etc/nginx/sslcert /etc/nginx
+/usr/bin/rsync -a root@{{ master_node }}:/etc/nginx/ip_vhost.d /etc/nginx
 sleep 2
 
 systemctl start openresty \

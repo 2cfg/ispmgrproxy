@@ -1,0 +1,10 @@
+---
+
+- name: Remove file (delete file)
+  ansible.builtin.file:
+    path: /etc/nginx/ip_vhost.d/{{ item.ipaddr }}.conf
+    state: absent
+  when: nginx_config_error == 1
+  with_items: "{{ r_query.query_result }}"
+
+- assert: { that: "nginx_config_error == 0" }

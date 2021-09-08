@@ -1,0 +1,9 @@
+- name: Privisioning local IP-address and settings
+  hosts: nginx-master
+  become: yes # sudo
+
+  vars:
+    nginx_config_error: 0
+
+  roles:
+    - { role: 2cfg.provisioning_configuration }

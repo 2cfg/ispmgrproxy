@@ -1,0 +1,5 @@
+server {
+    listen {{ item.ipaddr }}:80 default_server;
+    server_name {{ item.ipaddr }};
+    deny all;
+}

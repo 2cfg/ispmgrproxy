@@ -191,6 +191,14 @@ BEGIN
 END//
 
 
+
+CREATE TRIGGER `ispmgr`.`insert_ipaddr` AFTER INSERT ON `ispmgr`.`ipaddr`
+FOR EACH ROW
+BEGIN
+   -- SELECT `name` INTO @ipaddr FROM `ispmgr`.`ipaddr` WHERE `ipaddr`.`id` = NEW.id;
+   INSERT INTO `dnsmon`.`ipaddr_table` SET ipaddr = NEW.name;
+END//
+
 CREATE TRIGGER `dnsmon`.`update_webdomain_options` AFTER UPDATE ON `dnsmon`.`webdomain_options`
 FOR EACH ROW
 BEGIN

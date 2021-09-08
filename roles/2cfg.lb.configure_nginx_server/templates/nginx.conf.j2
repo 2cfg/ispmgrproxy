@@ -214,6 +214,7 @@ http {
         # Virtual Host Configs
         ##
 
+        include /etc/nginx/ip_vhost.d/*.conf;
         include /etc/nginx/conf.d/*.conf;
         include /etc/nginx/sites-enabled/*;
 }

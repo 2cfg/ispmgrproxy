@@ -1,0 +1,4 @@
+#!/bin/bash
+
+/usr/sbin/arptables -I INPUT -d {{ item.ipaddr }} -j DROP
+/usr/sbin/ip addr add  {{ item.ipaddr }}/32 dev {{ iface.device }}

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+ls -1 /etc/rc.local.d/* | bash
+
+exit 0;

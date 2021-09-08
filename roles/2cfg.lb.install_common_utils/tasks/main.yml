@@ -20,6 +20,7 @@
     - wget 
     - gnupg
     - ca-certificates
+    - arptables
 
 - name: Add apt key
   apt_key:
