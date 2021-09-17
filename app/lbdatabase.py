@@ -4,15 +4,16 @@ from mysql.connector import (connection)
 from mysql.connector import errorcode
 from app.webdomain import WebDomain, WebDomainRecord
 
+
 def get_webdomains_to_update():
     domains = []
 
     try:
-        cnx = connection.MySQLConnection(**config.database)
+        cnx = connection.MySQLConnection(**config.lb_database)
         cursor = cnx.cursor(buffered=True)
         ssl_cert = 'NULL'
 
-        query = ("SELECT DISTINCT domain FROM dnsmon.updates_web")
+        query = ("SELECT DISTINCT name_idn FROM lb.updates_web")
         cursor.execute(query)
         
         for (domain,) in cursor.fetchall():
@@ -20,11 +21,11 @@ def get_webdomains_to_update():
             if '*' in str(domain):
                 continue
             
-            query = ("SELECT updated_at FROM dnsmon.updates_web WHERE domain = '{}' ORDER BY updated_at DESC LIMIT 1;".format(domain))
+            query = ("SELECT updated_at FROM lb.updates_web WHERE name_idn = '{}' ORDER BY updated_at DESC LIMIT 1;".format(domain))
             cursor.execute(query)
             (updated_at, ) = cursor.fetchone()
 
-            query = ("SELECT id, active, secure, ssl_cert, redirect_http, users from ispmgr.webdomain WHERE name = '{}'".format(domain))
+            query = ("SELECT lb_ipaddr, real_ipaddr, user_id, botguard_check, l7filter, active, secure, redirect_http from lb.webdomain_options WHERE name_idn = '{}'".format(domain))
 
             cursor.execute(query)
             result = cursor.fetchone()
@@ -33,19 +34,7 @@ def get_webdomains_to_update():
                 domains.append(webdomain)
                 continue
 
-            (id, active, secure, ssl_cert, redirect_http, users) = result
-
-            query = ("select ip.name as ip_addr from ispmgr.ipaddr as ip join ispmgr.ipaddr_webdomain as ipw on ip.id = ipw.ipaddr where ipw.webdomain = {}").format(id)
-            cursor.execute(query)
-            (ip_addr, ) = cursor.fetchone()
-
-            query = ("select name from ispmgr.users where id = {}").format(users)
-            cursor.execute(query)
-            (owner, ) = cursor.fetchone()
-
-            query = ("select botguard, l7filter from dnsmon.webdomain_options where domain = '{}'").format(domain)
-            cursor.execute(query)
-            (botguard_check, l7filter,) = cursor.fetchone()
+            (lb_ipaddr, real_ipaddr, user_id, botguard_check, l7filter, active, secure, redirect_http,) = result
 
             if not botguard_check:
                 botguard_check = 'off'
@@ -55,8 +44,8 @@ def get_webdomains_to_update():
             else:
                 l7filter = False
 
-            webdomain = WebDomain(id=id, ip_addr=ip_addr, name_idn=domain, active=active, updated_at=updated_at,
-                                 secure=secure, ssl_cert=ssl_cert, owner=owner, 
+            webdomain = WebDomain(id=id, ip_addr=lb_ipaddr, name_idn=domain, active=active, updated_at=updated_at,
+                                 secure=secure, ssl_cert=ssl_cert, owner=user_id, real_ipaddr=real_ipaddr,
                                  redirect_http=redirect_http, botguard_check=botguard_check, l7filter=l7filter)
 
             domains.append(webdomain)
@@ -75,14 +64,13 @@ def get_webdomains_to_update():
 
     return domains
 
-
 def fill_webdomain_records(webdomain):
 
     try:
-        cnx = connection.MySQLConnection(**config.database)
+        cnx = connection.MySQLConnection(**config.lb_database)
         cursor = cnx.cursor(buffered=True)
 
-        query = ("SELECT name from ispmgr.webdomain_alias WHERE webdomain = '{}'".format(webdomain.id))
+        query = ("SELECT alias from lb.webdomain_alias WHERE name_idn = '{}'".format(webdomain.name_idn))
         cursor.execute(query)
 
         for (record,) in cursor.fetchall():
@@ -108,10 +96,10 @@ def remove_from_queue(webdomain):
     result = False
 
     try:
-        cnx = connection.MySQLConnection(**config.database)
+        cnx = connection.MySQLConnection(**config.lb_database)
         cursor = cnx.cursor(buffered=True)
 
-        query = ("DELETE FROM dnsmon.updates_web WHERE domain = '{}' and updated_at <= {}".
+        query = ("DELETE FROM lb.updates_web WHERE name_idn = '{}' and updated_at <= {}".
           format(webdomain.name_idn, webdomain.updated_at))
         cursor.execute(query)
 

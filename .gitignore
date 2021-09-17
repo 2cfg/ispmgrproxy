@@ -7,3 +7,5 @@ __pycache__/
 roles/2cfg.lb.configure_nginx_server/templates/50-botguard.conf
 cron_output.log
 cron_error.log
+ip_prov_cron_error.log
+ip_prov_cron_output.log

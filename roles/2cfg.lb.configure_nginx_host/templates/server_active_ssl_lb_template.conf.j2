@@ -1,0 +1,126 @@
+
+    server {
+        listen       {{ listen_server }}:443 ssl http2;
+        server_name  {{ server_names }};
+
+        access_log  /var/log/nginx/{{ web_domain }}.access.log;
+        error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
+
+        location ^~ /.well-known/acme-challenge/ {
+		root /etc/nginx/www;
+	}
+
+        {% if l7filter %}
+        access_by_lua_file anti_ddos_challenge.lua;
+        {% endif %}
+        botguard_check {{ botguard_check }};
+
+        location ~* ^.+\.(jpg|jpeg|gif|png|svg|js|css|mp3|ogg|mpe?g|avi|zip|gz|bz2?|rar|swf)$ {
+                proxy_pass  https://{{ x_real_ip }}:443$request_uri;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                proxy_ignore_headers Expires;
+                proxy_ignore_headers X-Accel-Expires;
+                proxy_ignore_headers Cache-Control;
+                proxy_ignore_headers Set-Cookie;
+
+                proxy_hide_header X-Accel-Expires;
+                proxy_hide_header Expires;
+                proxy_hide_header Cache-Control;
+                proxy_hide_header "Set-Cookie";
+                proxy_hide_header Pragma;
+
+                add_header X-Proxy-Cache $upstream_cache_status;
+
+                proxy_cache proxy_cache;
+                proxy_buffering on;
+                proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
+                proxy_cache_valid 15m;
+                proxy_cache_valid 404 15s;
+		}
+
+        location /
+        {
+                proxy_pass  https://{{ x_real_ip }}:443/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        ssl_certificate /etc/nginx/sslcert/{{ web_domain }}.fullchain.crt; 
+        ssl_certificate_key /etc/nginx/sslcert/{{ web_domain }}.private.key;
+
+        ssl_session_cache shared:le_nginx_SSL:10m;
+        ssl_session_timeout 1440m;
+        ssl_session_tickets off;
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_prefer_server_ciphers off;
+
+        ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
+
+        ssl_dhparam /etc/nginx/sslcert/ssl-dhparams.pem;
+
+
+    }
+
+    server {
+
+        listen {{ listen_server }}:80;
+        server_name  {{ server_names }};
+
+        access_log  /var/log/nginx/{{ web_domain }}.access.log;
+        error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
+
+        location ^~ /.well-known/acme-challenge/ {
+		root /etc/nginx/www;
+	}
+
+        {% if l7filter %}
+        access_by_lua_file anti_ddos_challenge.lua;
+        {% endif %}
+        botguard_check {{ botguard_check }};
+
+
+
+        location ~* ^.+\.(jpg|jpeg|gif|png|svg|js|css|mp3|ogg|mpe?g|avi|zip|gz|bz2?|rar|swf)$ {
+                proxy_pass  http://{{ x_real_ip }}:80$request_uri;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                proxy_ignore_headers Expires;
+                proxy_ignore_headers X-Accel-Expires;
+                proxy_ignore_headers Cache-Control;
+                proxy_ignore_headers Set-Cookie;
+
+                proxy_hide_header X-Accel-Expires;
+                proxy_hide_header Expires;
+                proxy_hide_header Cache-Control;
+                proxy_hide_header "Set-Cookie";
+                proxy_hide_header Pragma;
+
+                add_header X-Proxy-Cache $upstream_cache_status;
+                
+                proxy_cache proxy_cache;
+                proxy_buffering on;
+                proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
+                proxy_cache_valid 15m;
+                proxy_cache_valid 404 15s;
+		}
+
+        location /
+        {
+                proxy_pass  http://{{ x_real_ip }}:80/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+    }

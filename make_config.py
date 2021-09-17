@@ -3,6 +3,7 @@ import ansible_runner
 import os
 import sys
 import app.database as db
+import app.lbdatabase as lb
 import json
 
 def run_playbook(playbook, extra_vars):
@@ -53,6 +54,43 @@ if __name__ == '__main__':
 
         # обновить в БД инфомрацию о том, что операция выполнена
         db.remove_from_queue(webdomain)
+
+# ----- LB_PART -----
+
+    webdomains = lb.get_webdomains_to_update()
+
+    for webdomain in webdomains:
+
+        # remove old configurations
+        if hasattr(webdomain, "removed"):
+            if webdomain.removed:
+                extra_vars = "--extra-vars '{}'".format(json.dumps({"web_domain": webdomain.name_idn}))
+                rc = run_playbook('remove_webdomain.yml', extra_vars)
+                db.remove_from_queue(webdomain)
+                continue
+
+        lb.fill_webdomain_records(webdomain)
+
+        # создать конфиг
+        rc = run_playbook('configure_webdomain.yml', webdomain.get_ansible_extra_vars(lb=True))
+       
+        # Выпустить сертификат
+        if webdomain.secure == 'on':
+            rc = run_playbook('configure_ssl_cert.yml', webdomain.get_ansible_extra_vars(lb=True))
+
+            if rc != 0:
+                continue
+   
+            # создать конфиг с SSL
+            rc = run_playbook('configure_webdomain.yml', webdomain.get_ansible_extra_vars(lb=True))
+
+            if rc != 0:
+                continue
+
+        # обновить в БД инфомрацию о том, что операция выполнена
+        lb.remove_from_queue(webdomain)
+
+   
 
     # remove lock file
     os.remove("/tmp/make_config.lock")

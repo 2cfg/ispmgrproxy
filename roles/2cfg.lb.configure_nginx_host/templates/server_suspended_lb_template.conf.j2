@@ -1,0 +1,21 @@
+
+    server {
+        listen       {{ listen_server }}:80;
+        server_name  {{ server_names }};
+
+        index index.php index.html;
+
+	    access_log  /var/log/nginx/{{ web_domain }}.access.log;
+        error_log   /var/log/nginx/{{ web_domain }}.error.log warn;
+
+        {% if l7filter %}
+        access_by_lua_file anti_ddos_challenge.lua;
+        {% endif %}
+        botguard_check off;
+
+        location ^~ /.well-known/acme-challenge/ {
+		    root /etc/nginx/www;
+	    }
+
+	    root /etc/nginx/www;
+    }

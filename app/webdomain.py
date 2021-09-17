@@ -3,7 +3,8 @@ import json
 
 class WebDomain(object):
 
-    def __init__(self, id, ip_addr, name_idn, updated_at, secure, ssl_cert, owner, redirect_http, botguard_check, l7filter, active=True):
+    def __init__(self, id, ip_addr, name_idn, updated_at, secure, ssl_cert, owner, redirect_http, 
+        botguard_check, l7filter, active=True, real_ipaddr=None):
 
         self.id = id
         self.ip_addr = ip_addr
@@ -17,8 +18,9 @@ class WebDomain(object):
         self.l7filter = l7filter
         self.records = []
         self.updated_at = updated_at
+        self.real_ipaddr = real_ipaddr
 
-    def get_ansible_extra_vars(self):
+    def get_ansible_extra_vars(self, lb=False):
 
         active_chunk = "active" if self.active == 'on' else "suspended"
         if self.secure == 'on':
@@ -27,8 +29,12 @@ class WebDomain(object):
         else:
             ssl_chunk = ""
             redirect_chunk = ""
+
+        lb_chunk = ""
+        if lb:
+            lb_chunk = "_lb"
         
-        template_chunk = "{}{}{}".format(active_chunk, ssl_chunk, redirect_chunk)
+        template_chunk = "{}{}{}{}".format(active_chunk, ssl_chunk, redirect_chunk, lb_chunk)
         server_template = "server_{}_template.conf.j2".format(template_chunk)
 
         subj_alt_records = []
@@ -45,6 +51,8 @@ class WebDomain(object):
             "owner": self.owner,
             "botguard_check": self.botguard_check,
             "l7filter": self.l7filter,
+            "subject_alt_name": ",".join(r for r in subj_alt_records),
+            "x_real_ip": self.real_ipaddr,
         }
 
         json_string = json.dumps(data)   
