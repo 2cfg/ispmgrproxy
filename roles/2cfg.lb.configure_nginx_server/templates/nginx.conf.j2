@@ -73,6 +73,9 @@ stream {
 # http proxy
 http {
 
+        server_names_hash_bucket_size 128;
+
+
         server {
             listen {{ listen_server }}:80 default_server;
             server_name {{ listen_server }} _ "";

@@ -1,0 +1,21 @@
+- name: SSL_CREATE_ENVIRONMENT
+  hosts: nginx-master
+  become: yes # sudo
+
+  tasks:
+    - name: Check whether an account with the given account key exists
+      community.crypto.acme_account_info:
+        account_key_src: /etc/ssl/private/ansible.com.pem
+        acme_version: 2
+        acme_directory: https://acme-staging-v02.api.letsencrypt.org/directory
+      register: account_data
+    - name: Verify that account exists
+      assert:
+        that:
+          - account_data.exists
+    - name: Print account URI
+      ansible.builtin.debug:
+        var: account_data.account_uri
+    - name: Print account contacts
+      ansible.builtin.debug:
+        var: account_data.account.contact

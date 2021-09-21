@@ -90,7 +90,6 @@ def fill_webdomain_records(webdomain):
             webdomain_record = WebDomainRecord(name_idn=record)
             webdomain.records.append(webdomain_record)
 
-
         cursor.close()
 
     except mysql.connector.Error as err:

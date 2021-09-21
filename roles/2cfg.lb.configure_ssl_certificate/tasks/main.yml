@@ -17,10 +17,10 @@
   community.crypto.acme_certificate:
     account_key_src: /etc/ssl/private/ansible.com.pem 
     acme_version: 2
-    acme_directory: https://acme-staging-v02.api.letsencrypt.org/directory
+    acme_directory: https://acme-v02.api.letsencrypt.org/directory
     csr: /etc/ssl/csr/{{ web_domain }}.csr
     dest: /etc/nginx/sslcert/{{ web_domain }}.crt
-    fullchain_dest: /etc/nginx/sslcert/{{ web_domain }}-fullchain.crt
+    fullchain_dest: /etc/nginx/sslcert/{{ web_domain }}.fullchain.crt
   register: domain_challenge
 
 
@@ -47,11 +47,11 @@
   community.crypto.acme_certificate:
     account_key_src: /etc/ssl/private/ansible.com.pem
     acme_version: 2
-    acme_directory: https://acme-staging-v02.api.letsencrypt.org/directory
+    acme_directory: https://acme-v02.api.letsencrypt.org/directory
     csr: /etc/ssl/csr/{{ web_domain }}.csr
     dest: /etc/nginx/sslcert/{{ web_domain }}.crt
-    fullchain_dest: /etc/nginx/sslcert/{{ web_domain }}-fullchain.crt
-    chain_dest: /etc/nginx/sslcert/{{ web_domain }}-chain.crt
+    fullchain_dest: /etc/nginx/sslcert/{{ web_domain }}.fullchain.crt
+    chain_dest: /etc/nginx/sslcert/{{ web_domain }}.chain.crt
     data: "{{ domain_challenge }}"
 
 

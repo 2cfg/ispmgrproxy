@@ -1,0 +1,29 @@
+- name: Configure nginx vhost
+  hosts: nginx-master
+  become: yes # sudo
+  ignore_unreachable: yes
+
+  vars:
+       master_node: 192.168.47.102
+       ispmanager_node: 192.168.47.106
+       nginx_config_error: 0
+       web_domain: "lua.2cfg.su"
+       server_names: "lua.2cfg.su"
+       server_template: "server_active_lb_template.conf.j2"
+       listen_server: "185.135.83.132"
+       l7filter: False
+       botguard_check: 'off'
+       x_real_ip: '192.168.47.222'
+
+  tasks:
+
+  - name: Display domain_name variable
+    debug:
+      msg: "Debug variable web_domain: {{ web_domain }}"
+
+  - name: Display server_names variables
+    debug:
+      msg: "Debug variable server_names: {{ server_names }}"
+
+  roles:
+    - role: 2cfg.lb.configure_nginx_host

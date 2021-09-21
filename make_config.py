@@ -76,7 +76,7 @@ if __name__ == '__main__':
        
         # Выпустить сертификат
         if webdomain.secure == 'on':
-            rc = run_playbook('configure_ssl_cert.yml', webdomain.get_ansible_extra_vars(lb=True))
+            rc = run_playbook('configure_lb_ssl_cert.yml', webdomain.get_ansible_extra_vars(lb=True))
 
             if rc != 0:
                 continue

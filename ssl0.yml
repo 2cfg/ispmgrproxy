@@ -1,0 +1,21 @@
+- name: SSL_CREATE_ENVIRONMENT
+  hosts: nginx-master
+  become: yes # sudo
+
+  tasks:
+    - name: Generate an OpenSSL private key with the default values (4096 bits, RSA)
+      community.crypto.openssl_privatekey:
+        path: /etc/ssl/private/ansible.com.pem
+
+
+    - name: Make sure account has given email address. 
+      community.crypto.acme_account:
+        account_key_src: /etc/ssl/private/ansible.com.pem
+        state: present
+        terms_agreed: yes
+        validate_certs: yes
+        acme_version: 2
+        acme_directory: https://acme-v02.api.letsencrypt.org/directory
+        contact:
+        - mailto:roman@adman.com
+
